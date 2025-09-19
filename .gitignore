@@ -1,0 +1,53 @@
+# Compiled r-code files
+*.r
+
+# Debug / listing / Xref / map files
+*.dbg
+*.lg
+*.lst
+*.xref
+*.map
+
+# Backup files
+*.bak
+*~
+
+# Temporary / work files
+*.tmp
+*.temp
+*.p~
+*.w~
+
+# OpenEdge session/work files
+.propath
+.dlc
+.pf
+.sav
+.save
+.crc
+
+# Progress AppBuilder generated temp directories
+*.db
+*.bi
+*.lg
+*.lk
+*.lbi
+*.d
+*.d1
+*.d2
+*.st
+
+# Eclipse / PDSOE metadata
+.metadata/
+.project
+.classpath
+.settings/
+bin/
+build/
+
+# VS Code settings (if you use it)
+.vscode/
+
+# OS-specific files
+Thumbs.db
+.DS_Store
