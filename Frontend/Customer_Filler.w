@@ -24,7 +24,7 @@
 
 /* ***************************  Definitions  ************************** */
 USING Progress.Json.ObjectModel.*.
-USING Backend.Controller.
+USING Backend.Customer.
 
 /* Parameters Definitions ---                                           */
 DEFINE OUTPUT PARAMETER iCustID AS INTEGER NO-UNDO.
@@ -148,7 +148,7 @@ DEFINE FRAME Dialog-Frame
           FONT 5
      "CUSTOMER FILTER" VIEW-AS TEXT
           SIZE 24 BY 1 AT ROW 1.5 COL 20 WIDGET-ID 2
-          FONT 9
+          FONT 1
      RECT-1 AT ROW 3 COL 3 WIDGET-ID 12
      RECT-2 AT ROW 11 COL 3 WIDGET-ID 20
      SPACE(2.74) SKIP(2.12)
@@ -230,7 +230,7 @@ END.
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Search Dialog-Frame
 ON CHOOSE OF BTN-Search IN FRAME Dialog-Frame /* Search */
 DO:
-    DEFINE VARIABLE oController AS Backend.Controller NO-UNDO.
+    DEFINE VARIABLE oController AS Backend.Customer NO-UNDO.
     DEFINE VARIABLE lcResult    AS LONGCHAR          NO-UNDO.
     DEFINE VARIABLE oParser     AS ObjectModelParser NO-UNDO.
     DEFINE VARIABLE oArray      AS JsonArray         NO-UNDO.
@@ -253,7 +253,7 @@ DO:
         cEmail     = FLN-Email:SCREEN-VALUE.
 
     /* Call backend search method */
-    oController = NEW Backend.Controller().
+    oController = NEW Backend.Customer().
     lcResult    = oController:searchCustomers(
                         INPUT cFirstName,
                         INPUT cLastName,
