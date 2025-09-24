@@ -27,7 +27,21 @@
 /* Parameters Definitions ---                                           */
 
 /* Local Variable Definitions ---                                       */
-
+DEFINE TEMP-TABLE ttCustomer NO-UNDO
+    FIELD CustID        AS INTEGER
+    FIELD FirstName     AS CHARACTER
+    FIELD LastName      AS CHARACTER
+    FIELD Mobile        AS CHARACTER
+    FIELD Email         AS CHARACTER
+    FIELD Address       AS CHARACTER
+    FIELD City          AS CHARACTER
+    FIELD State         AS CHARACTER
+    FIELD Country       AS CHARACTER
+    FIELD PostalCode    AS CHARACTER
+    FIELD MaritalStatus AS CHARACTER
+    FIELD CreatedDate   AS DATE
+    FIELD ModifiedDate  AS DATE
+    INDEX pkCustID      IS PRIMARY UNIQUE CustID.
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
@@ -39,16 +53,16 @@
 &Scoped-define PROCEDURE-TYPE Dialog-Box
 &Scoped-define DB-AWARE no
 
-&Scoped-define WIDGETID-FILE-NAME 
-
 /* Name of first Frame and/or Browse and/or first Query                 */
 &Scoped-define FRAME-NAME Dialog-Frame
 
 /* Standard List Definitions                                            */
-&Scoped-Define ENABLED-OBJECTS RECT-15 FLN-DepositDate FLN-Amount ~
-FLN-ToAccount CMB-Source FLN-TransactionId BTN-Okay BTN-Cancel 
-&Scoped-Define DISPLAYED-OBJECTS FLN-DepositDate FLN-Amount FLN-ToAccount ~
-CMB-Source FLN-TransactionId 
+&Scoped-Define ENABLED-OBJECTS RECT-9 RECT-11 FLN-FirstName FLN-LastName ~
+FLN-DateOfBirth CMB-MaritalStatus FLN-Address FLN-Address_2 CMB-City ~
+CMB-State CBM-PostalCode CMB-Country BTN-Save BTN-Cancel 
+&Scoped-Define DISPLAYED-OBJECTS FLN-FirstName FLN-LastName FLN-DateOfBirth ~
+CMB-MaritalStatus FLN-Address FLN-Address_2 CMB-City CMB-State ~
+CBM-PostalCode CMB-Country 
 
 /* Custom List Definitions                                              */
 /* List-1,List-2,List-3,List-4,List-5,List-6                            */
@@ -65,65 +79,108 @@ CMB-Source FLN-TransactionId
 /* Definitions of the field level widgets                               */
 DEFINE BUTTON BTN-Cancel AUTO-END-KEY 
      LABEL "Cancel" 
-     SIZE 15 BY 1.13
+     SIZE 10 BY 1.13
      BGCOLOR 8 .
 
-DEFINE BUTTON BTN-Okay AUTO-GO 
-     LABEL "Okay" 
-     SIZE 15 BY 1.13
+DEFINE BUTTON BTN-Save AUTO-GO 
+     LABEL "Save" 
+     SIZE 10 BY 1.13
      BGCOLOR 8 .
 
-DEFINE VARIABLE CMB-Source AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Source" 
+DEFINE VARIABLE CBM-PostalCode AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Postal Code" 
      VIEW-AS COMBO-BOX INNER-LINES 5
-     LIST-ITEMS "TO BANK" 
+     LIST-ITEMS "Item 1" 
      DROP-DOWN-LIST
-     SIZE 16 BY .88 NO-UNDO.
+     SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-Amount AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Amount" 
+DEFINE VARIABLE CMB-City AS CHARACTER FORMAT "X(256)":U 
+     LABEL "City" 
+     VIEW-AS COMBO-BOX INNER-LINES 5
+     LIST-ITEMS "Item 1" 
+     DROP-DOWN-LIST
+     SIZE 14 BY 1 NO-UNDO.
+
+DEFINE VARIABLE CMB-Country AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Country" 
+     VIEW-AS COMBO-BOX INNER-LINES 5
+     LIST-ITEMS "Item 1" 
+     DROP-DOWN-LIST
+     SIZE 14 BY 1 NO-UNDO.
+
+DEFINE VARIABLE CMB-MaritalStatus AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Marital Status" 
+     VIEW-AS COMBO-BOX INNER-LINES 5
+     LIST-ITEMS "Item 1" 
+     DROP-DOWN-LIST
+     SIZE 14 BY 1 NO-UNDO.
+
+DEFINE VARIABLE CMB-State AS CHARACTER FORMAT "X(256)":U 
+     LABEL "State" 
+     VIEW-AS COMBO-BOX INNER-LINES 5
+     LIST-ITEMS "Item 1" 
+     DROP-DOWN-LIST
+     SIZE 14 BY 1 NO-UNDO.
+
+DEFINE VARIABLE FLN-Address AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Address" 
      VIEW-AS FILL-IN 
      SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-DepositDate AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Deposit Date" 
+DEFINE VARIABLE FLN-Address_2 AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Address 2" 
      VIEW-AS FILL-IN 
      SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-ToAccount AS CHARACTER FORMAT "X(256)":U 
-     LABEL "To Account" 
+DEFINE VARIABLE FLN-DateOfBirth AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Date of Birth" 
      VIEW-AS FILL-IN 
      SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-TransactionId AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Transaction ID" 
+DEFINE VARIABLE FLN-FirstName AS CHARACTER FORMAT "X(256)":U 
+     LABEL "First Name" 
      VIEW-AS FILL-IN 
      SIZE 14 BY 1 NO-UNDO.
 
-DEFINE RECTANGLE RECT-15
+DEFINE VARIABLE FLN-LastName AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Last Name" 
+     VIEW-AS FILL-IN 
+     SIZE 14 BY 1 NO-UNDO.
+
+DEFINE RECTANGLE RECT-11
      EDGE-PIXELS 10  NO-FILL   
-     SIZE 40 BY 8.25.
+     SIZE 71 BY 7.5.
+
+DEFINE RECTANGLE RECT-9
+     EDGE-PIXELS 10  NO-FILL   
+     SIZE 71 BY 4.
 
 
 /* ************************  Frame Definitions  *********************** */
 
 DEFINE FRAME Dialog-Frame
-     FLN-DepositDate AT ROW 3.5 COL 25 COLON-ALIGNED WIDGET-ID 4
-     FLN-Amount AT ROW 5 COL 25 COLON-ALIGNED WIDGET-ID 6
-     FLN-ToAccount AT ROW 6.5 COL 25 COLON-ALIGNED WIDGET-ID 8
-     CMB-Source AT ROW 8 COL 23 COLON-ALIGNED WIDGET-ID 12
-     FLN-TransactionId AT ROW 9.5 COL 25 COLON-ALIGNED WIDGET-ID 10
-     BTN-Okay AT ROW 12 COL 10
-     BTN-Cancel AT ROW 12 COL 34
-     "DEPOSIT SCREEN" VIEW-AS TEXT
-          SIZE 22 BY 1.5 AT ROW 1.25 COL 19 WIDGET-ID 2
+     FLN-FirstName AT ROW 3.75 COL 19 COLON-ALIGNED WIDGET-ID 2
+     FLN-LastName AT ROW 3.75 COL 53 COLON-ALIGNED WIDGET-ID 4
+     FLN-DateOfBirth AT ROW 5.5 COL 19 COLON-ALIGNED WIDGET-ID 8
+     CMB-MaritalStatus AT ROW 5.5 COL 53 COLON-ALIGNED WIDGET-ID 12
+     FLN-Address AT ROW 8 COL 19 COLON-ALIGNED WIDGET-ID 6
+     FLN-Address_2 AT ROW 8 COL 53 COLON-ALIGNED WIDGET-ID 16
+     CMB-City AT ROW 9.5 COL 19 COLON-ALIGNED WIDGET-ID 18
+     CMB-State AT ROW 9.5 COL 53 COLON-ALIGNED WIDGET-ID 20
+     CBM-PostalCode AT ROW 11 COL 19 COLON-ALIGNED WIDGET-ID 22
+     CMB-Country AT ROW 11 COL 53 COLON-ALIGNED WIDGET-ID 24
+     BTN-Save AT ROW 13 COL 28
+     BTN-Cancel AT ROW 13 COL 45
+     "ADD/UPDATE CUSTOMER" VIEW-AS TEXT
+          SIZE 31 BY 1.5 AT ROW 1.25 COL 27 WIDGET-ID 10
           FONT 9
-     RECT-15 AT ROW 3 COL 9 WIDGET-ID 14
-     SPACE(9.74) SKIP(2.77)
+     RECT-9 AT ROW 3.25 COL 6 WIDGET-ID 14
+     RECT-11 AT ROW 7.5 COL 6 WIDGET-ID 28
+     SPACE(4.87) SKIP(0.71)
     WITH VIEW-AS DIALOG-BOX KEEP-TAB-ORDER 
          SIDE-LABELS NO-UNDERLINE THREE-D  SCROLLABLE 
          TITLE "<insert dialog title>"
-         DEFAULT-BUTTON BTN-Okay CANCEL-BUTTON BTN-Cancel WIDGET-ID 100.
+         DEFAULT-BUTTON BTN-Save CANCEL-BUTTON BTN-Cancel WIDGET-ID 100.
 
 
 /* *********************** Procedure Settings ************************ */
@@ -223,10 +280,13 @@ PROCEDURE enable_UI :
                These statements here are based on the "Other 
                Settings" section of the widget Property Sheets.
 ------------------------------------------------------------------------------*/
-  DISPLAY FLN-DepositDate FLN-Amount FLN-ToAccount CMB-Source FLN-TransactionId 
+  DISPLAY FLN-FirstName FLN-LastName FLN-DateOfBirth CMB-MaritalStatus 
+          FLN-Address FLN-Address_2 CMB-City CMB-State CBM-PostalCode 
+          CMB-Country 
       WITH FRAME Dialog-Frame.
-  ENABLE RECT-15 FLN-DepositDate FLN-Amount FLN-ToAccount CMB-Source 
-         FLN-TransactionId BTN-Okay BTN-Cancel 
+  ENABLE RECT-9 RECT-11 FLN-FirstName FLN-LastName FLN-DateOfBirth 
+         CMB-MaritalStatus FLN-Address FLN-Address_2 CMB-City CMB-State 
+         CBM-PostalCode CMB-Country BTN-Save BTN-Cancel 
       WITH FRAME Dialog-Frame.
   VIEW FRAME Dialog-Frame.
   {&OPEN-BROWSERS-IN-QUERY-Dialog-Frame}

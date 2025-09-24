@@ -1,5 +1,7 @@
 &ANALYZE-SUSPEND _VERSION-NUMBER AB_v10r12 GUI
 &ANALYZE-RESUME
+/* Connected Databases 
+*/
 &Scoped-define WINDOW-NAME C-Win
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CUSTOM _DEFINITIONS C-Win 
 /*------------------------------------------------------------------------
@@ -29,12 +31,38 @@
      cleanup will occur on deletion of the procedure. */
 
 CREATE WIDGET-POOL.
-
 /* ***************************  Definitions  ************************** */
 
 /* Parameters Definitions ---                                           */
 
 /* Local Variable Definitions ---                                       */
+DEFINE TEMP-TABLE ttCustomer NO-UNDO
+    FIELD CustID        AS INTEGER
+    FIELD FirstName     AS CHARACTER
+    FIELD LastName      AS CHARACTER
+    FIELD Mobile        AS CHARACTER
+    FIELD Email         AS CHARACTER
+    FIELD Address       AS CHARACTER
+    FIELD Address2      AS CHARACTER
+    FIELD City          AS CHARACTER
+    FIELD State         AS CHARACTER
+    FIELD Country       AS CHARACTER
+    FIELD PostalCode    AS CHARACTER
+    FIELD MaritalStatus AS CHARACTER
+    FIELD CreatedDate   AS DATE
+    FIELD ModifiedDate  AS DATE
+    INDEX pkCustID IS PRIMARY UNIQUE CustID.
+    
+    
+DEFINE TEMP-TABLE ttAccount NO-UNDO
+    FIELD AccountID   AS INTEGER
+    FIELD CustID      AS INTEGER
+    FIELD AccountType AS CHARACTER  /* Saving / Loan */
+    FIELD Balance     AS DECIMAL
+    FIELD CreatedDate AS DATE
+    FIELD cStatus     AS CHARACTER  /* Active / Closed */
+    INDEX pkAccountID IS PRIMARY UNIQUE AccountID
+    INDEX ixCustID                      CustID.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
@@ -47,21 +75,35 @@ CREATE WIDGET-POOL.
 &Scoped-define PROCEDURE-TYPE Window
 &Scoped-define DB-AWARE no
 
-&Scoped-define WIDGETID-FILE-NAME 
-
 /* Name of designated FRAME-NAME and/or first browse and/or first query */
 &Scoped-define FRAME-NAME DEFAULT-FRAME
-&Scoped-define BROWSE-NAME BROWSE-6
+&Scoped-define BROWSE-NAME BRW-AccountInformation
+
+/* Internal Tables (found by Frame, Query & Browse Queries)             */
+&Scoped-define INTERNAL-TABLES ttCustomer
+
+/* Definitions for BROWSE BRW-AccountInformation                        */
+&Scoped-define FIELDS-IN-QUERY-BRW-AccountInformation   
+&Scoped-define ENABLED-FIELDS-IN-QUERY-BRW-AccountInformation   
+&Scoped-define SELF-NAME BRW-AccountInformation
+&Scoped-define QUERY-STRING-BRW-AccountInformation FOR EACH ttCustomer
+&Scoped-define OPEN-QUERY-BRW-AccountInformation OPEN QUERY {&SELF-NAME} FOR EACH ttCustomer.
+&Scoped-define TABLES-IN-QUERY-BRW-AccountInformation ttCustomer
+&Scoped-define FIRST-TABLE-IN-QUERY-BRW-AccountInformation ttCustomer
+
 
 /* Definitions for FRAME DEFAULT-FRAME                                  */
+&Scoped-define OPEN-BROWSERS-IN-QUERY-DEFAULT-FRAME ~
+    ~{&OPEN-QUERY-BRW-AccountInformation}
 
 /* Standard List Definitions                                            */
 &Scoped-Define ENABLED-OBJECTS RECT-3 RECT-4 RECT-5 RECT-6 RECT-7 ~
-FLN-CustomerId BTN-Search BTN-AdvanceSearch FLN-FirstName FLN-LastName ~
+FLN-CustID BTN-Search BTN-AdvanceSearch FLN-FirstName FLN-LastName ~
 CMB-MaritalStatus BTN-Add FLN-Address FLN-Address-2 BTN-Update FLN-City ~
 FLN-State BTN-Delete FLN-Country FLN-PostalCode TGL-SelectAll ~
-TGL-DeselectAll BTN-AddAccount BROWSE-6 BTN-UpdateAccount BTN-DeleteAccount 
-&Scoped-Define DISPLAYED-OBJECTS FLN-CustomerId FLN-FirstName FLN-LastName ~
+TGL-DeselectAll BTN-AddAccount BRW-AccountInformation BTN-UpdateAccount ~
+BTN-DeleteAccount 
+&Scoped-Define DISPLAYED-OBJECTS FLN-CustID FLN-FirstName FLN-LastName ~
 CMB-MaritalStatus FLN-Address FLN-Address-2 FLN-City FLN-State FLN-Country ~
 FLN-PostalCode TGL-SelectAll TGL-DeselectAll 
 
@@ -116,7 +158,7 @@ DEFINE VARIABLE CMB-MaritalStatus AS CHARACTER FORMAT "X(256)":U
      VIEW-AS COMBO-BOX INNER-LINES 5
      LIST-ITEMS "Single","Married" 
      DROP-DOWN-LIST
-     SIZE 14 BY .88 NO-UNDO.
+     SIZE 14 BY 1 NO-UNDO.
 
 DEFINE VARIABLE FLN-Address AS CHARACTER FORMAT "X(256)":U 
      LABEL "Address" 
@@ -138,7 +180,7 @@ DEFINE VARIABLE FLN-Country AS CHARACTER FORMAT "X(256)":U
      VIEW-AS FILL-IN 
      SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-CustomerId AS CHARACTER FORMAT "X(256)":U 
+DEFINE VARIABLE FLN-CustID AS CHARACTER FORMAT "X(256)":U 
      LABEL "Customer ID" 
      VIEW-AS FILL-IN 
      SIZE 26 BY 1 NO-UNDO.
@@ -193,11 +235,17 @@ DEFINE VARIABLE TGL-SelectAll AS LOGICAL INITIAL no
      VIEW-AS TOGGLE-BOX
      SIZE 11.88 BY .75 NO-UNDO.
 
+/* Query definitions                                                    */
+&ANALYZE-SUSPEND
+DEFINE QUERY BRW-AccountInformation FOR 
+      ttCustomer SCROLLING.
+&ANALYZE-RESUME
 
 /* Browse definitions                                                   */
-DEFINE BROWSE BROWSE-6
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS BROWSE-6 C-Win _STRUCTURED
-  
+DEFINE BROWSE BRW-AccountInformation
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS BRW-AccountInformation C-Win _FREEFORM
+  QUERY BRW-AccountInformation DISPLAY
+      
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
     WITH NO-ROW-MARKERS SEPARATORS SIZE 74 BY 3.75 FIT-LAST-COLUMN.
@@ -206,7 +254,7 @@ DEFINE BROWSE BROWSE-6
 /* ************************  Frame Definitions  *********************** */
 
 DEFINE FRAME DEFAULT-FRAME
-     FLN-CustomerId AT ROW 4 COL 29 COLON-ALIGNED WIDGET-ID 26
+     FLN-CustID AT ROW 4 COL 29 COLON-ALIGNED WIDGET-ID 26
      BTN-Search AT ROW 4 COL 77 WIDGET-ID 28
      BTN-AdvanceSearch AT ROW 4 COL 95 WIDGET-ID 30
      FLN-FirstName AT ROW 8.22 COL 23 COLON-ALIGNED WIDGET-ID 34
@@ -214,7 +262,7 @@ DEFINE FRAME DEFAULT-FRAME
      CMB-MaritalStatus AT ROW 8.22 COL 83 COLON-ALIGNED WIDGET-ID 50
      BTN-Add AT ROW 9.47 COL 101 WIDGET-ID 52
      FLN-Address AT ROW 10.22 COL 23 COLON-ALIGNED WIDGET-ID 36
-     FLN-Address-2 AT ROW 10.22 COL 53 COLON-ALIGNED WIDGET-ID 44
+     FLN-Address-2 AT ROW 10.25 COL 53 COLON-ALIGNED WIDGET-ID 44
      BTN-Update AT ROW 11.47 COL 101 WIDGET-ID 54
      FLN-City AT ROW 12.22 COL 23 COLON-ALIGNED WIDGET-ID 38
      FLN-State AT ROW 12.22 COL 53 COLON-ALIGNED WIDGET-ID 46
@@ -224,15 +272,15 @@ DEFINE FRAME DEFAULT-FRAME
      TGL-SelectAll AT ROW 18.75 COL 20 WIDGET-ID 70
      TGL-DeselectAll AT ROW 18.75 COL 34 WIDGET-ID 72
      BTN-AddAccount AT ROW 19.03 COL 96.38 WIDGET-ID 74
-     BROWSE-6 AT ROW 19.75 COL 17 WIDGET-ID 200
+     BRW-AccountInformation AT ROW 20 COL 16.88 WIDGET-ID 200
      BTN-UpdateAccount AT ROW 20.56 COL 96.13 WIDGET-ID 76
      BTN-DeleteAccount AT ROW 22.03 COL 96.13 WIDGET-ID 78
-     "CUSTOMER INFORMATION" VIEW-AS TEXT
-          SIZE-PIXELS 264 BY 56 AT Y 8 X 392 WIDGET-ID 24
-          FONT 9
      "Account Information" VIEW-AS TEXT
-          SIZE 23 BY 1 AT ROW 16.72 COL 56 WIDGET-ID 66
+          SIZE 23 BY 1 AT ROW 16.75 COL 54 WIDGET-ID 66
           FONT 5
+     "CUSTOMER INFORMATION" VIEW-AS TEXT
+          SIZE-PIXELS 264 BY 56 AT Y 8 X 386 WIDGET-ID 24
+          FONT 9
      "Customer Details" VIEW-AS TEXT
           SIZE 19 BY 1 AT ROW 5.72 COL 56 WIDGET-ID 62
           FONT 5
@@ -292,11 +340,23 @@ ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
   VISIBLE,,RUN-PERSISTENT                                               */
 /* SETTINGS FOR FRAME DEFAULT-FRAME
    FRAME-NAME                                                           */
-/* BROWSE-TAB BROWSE-6 BTN-AddAccount DEFAULT-FRAME */
+/* BROWSE-TAB BRW-AccountInformation BTN-AddAccount DEFAULT-FRAME */
 IF SESSION:DISPLAY-TYPE = "GUI":U AND VALID-HANDLE(C-Win)
 THEN C-Win:HIDDEN = no.
 
 /* _RUN-TIME-ATTRIBUTES-END */
+&ANALYZE-RESUME
+
+
+/* Setting information for Queries and Browse Widgets fields            */
+
+&ANALYZE-SUSPEND _QUERY-BLOCK BROWSE BRW-AccountInformation
+/* Query rebuild information for BROWSE BRW-AccountInformation
+     _START_FREEFORM
+OPEN QUERY {&SELF-NAME} FOR EACH ttCustomer.
+     _END_FREEFORM
+     _Query            is OPENED
+*/  /* BROWSE BRW-AccountInformation */
 &ANALYZE-RESUME
 
  
@@ -308,12 +368,13 @@ THEN C-Win:HIDDEN = no.
 &Scoped-define SELF-NAME C-Win
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL C-Win C-Win
 ON END-ERROR OF C-Win /* <insert window title> */
-OR ENDKEY OF {&WINDOW-NAME} ANYWHERE DO:
-  /* This case occurs when the user presses the "Esc" key.
-     In a persistently run window, just ignore this.  If we did not, the
-     application would exit. */
-  IF THIS-PROCEDURE:PERSISTENT THEN RETURN NO-APPLY.
-END.
+OR ENDKEY OF {&WINDOW-NAME} ANYWHERE 
+    DO:
+        /* This case occurs when the user presses the "Esc" key.
+           In a persistently run window, just ignore this.  If we did not, the
+           application would exit. */
+        IF THIS-PROCEDURE:PERSISTENT THEN RETURN NO-APPLY.
+    END.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
@@ -322,16 +383,74 @@ END.
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL C-Win C-Win
 ON WINDOW-CLOSE OF C-Win /* <insert window title> */
 DO:
-  /* This event will close the window and terminate the procedure.  */
-  APPLY "CLOSE":U TO THIS-PROCEDURE.
-  RETURN NO-APPLY.
+        /* This event will close the window and terminate the procedure.  */
+        APPLY "CLOSE":U TO THIS-PROCEDURE.
+        RETURN NO-APPLY.
+    END.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
+&Scoped-define SELF-NAME BTN-AdvanceSearch
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-AdvanceSearch C-Win
+ON CHOOSE OF BTN-AdvanceSearch IN FRAME DEFAULT-FRAME /* Advance Search */
+DO:
+    DEFINE VARIABLE iCustID AS INTEGER NO-UNDO.
+
+    /* Run Customer Filler dialog for search */
+    RUN Customer_Filler.w (
+        OUTPUT iCustID
+    ).
+
+    /* If a customer was selected, fill the Customer ID and trigger search */
+    IF iCustID > 0 THEN DO:
+        FLN-CustID:SCREEN-VALUE = STRING(iCustID).
+        APPLY "CHOOSE" TO BTN-Search.
+    END.
 END.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
 
-&Scoped-define BROWSE-NAME BROWSE-6
+&Scoped-define SELF-NAME BTN-Search
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Search C-Win
+ON CHOOSE OF BTN-Search IN FRAME DEFAULT-FRAME /* Search */
+DO:
+        EMPTY TEMP-TABLE ttCustomer.
+        EMPTY TEMP-TABLE ttAccount.
+
+        /* Lookup customer by CustID */
+        IF AVAILABLE ttCustomer THEN 
+        DO:
+            /* Populate UI fields */
+            FLN-FirstName:SCREEN-VALUE       = ttCustomer.FirstName.
+            FLN-LastName:SCREEN-VALUE        = ttCustomer.LastName.
+            FLN-Address-2:SCREEN-VALUE       = ttCustomer.Address2.   /* <─ New */
+            FLN-Address:SCREEN-VALUE         = ttCustomer.Address.
+            FLN-City:SCREEN-VALUE            = ttCustomer.City.
+            FLN-State:SCREEN-VALUE           = ttCustomer.State.
+            FLN-Country:SCREEN-VALUE         = ttCustomer.Country.
+            FLN-PostalCode:SCREEN-VALUE      = ttCustomer.PostalCode.
+            CMB-MaritalStatus:SCREEN-VALUE   = ttCustomer.MaritalStatus.
+
+            /* Load accounts */
+            RUN Load_Accounts.p (INPUT ttCustomer.CustID, OUTPUT TABLE ttAccount).
+
+            BROWSE BRW-AccountInformation:REFRESH().
+        END.
+        ELSE 
+        DO:
+            MESSAGE "Customer not found" VIEW-AS ALERT-BOX INFO.
+        END. 
+    END.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
+&Scoped-define BROWSE-NAME BRW-AccountInformation
 &UNDEFINE SELF-NAME
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CUSTOM _MAIN-BLOCK C-Win 
@@ -346,7 +465,7 @@ ASSIGN CURRENT-WINDOW                = {&WINDOW-NAME}
 /* The CLOSE event can be used from inside or outside the procedure to  */
 /* terminate it.                                                        */
 ON CLOSE OF THIS-PROCEDURE 
-   RUN disable_UI.
+    RUN disable_UI.
 
 /* Best default for GUI applications is...                              */
 PAUSE 0 BEFORE-HIDE.
@@ -355,10 +474,10 @@ PAUSE 0 BEFORE-HIDE.
 /* (NOTE: handle ERROR and END-KEY so cleanup code will always fire.    */
 MAIN-BLOCK:
 DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
-   ON END-KEY UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK:
-  RUN enable_UI.
-  IF NOT THIS-PROCEDURE:PERSISTENT THEN
-    WAIT-FOR CLOSE OF THIS-PROCEDURE.
+    ON END-KEY UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK:
+    RUN enable_UI.
+    IF NOT THIS-PROCEDURE:PERSISTENT THEN
+        WAIT-FOR CLOSE OF THIS-PROCEDURE.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -397,15 +516,16 @@ PROCEDURE enable_UI :
                These statements here are based on the "Other 
                Settings" section of the widget Property Sheets.
 ------------------------------------------------------------------------------*/
-  DISPLAY FLN-CustomerId FLN-FirstName FLN-LastName CMB-MaritalStatus 
-          FLN-Address FLN-Address-2 FLN-City FLN-State FLN-Country 
-          FLN-PostalCode TGL-SelectAll TGL-DeselectAll 
+  DISPLAY FLN-CustID FLN-FirstName FLN-LastName CMB-MaritalStatus FLN-Address 
+          FLN-Address-2 FLN-City FLN-State FLN-Country FLN-PostalCode 
+          TGL-SelectAll TGL-DeselectAll 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
-  ENABLE RECT-3 RECT-4 RECT-5 RECT-6 RECT-7 FLN-CustomerId BTN-Search 
+  ENABLE RECT-3 RECT-4 RECT-5 RECT-6 RECT-7 FLN-CustID BTN-Search 
          BTN-AdvanceSearch FLN-FirstName FLN-LastName CMB-MaritalStatus BTN-Add 
          FLN-Address FLN-Address-2 BTN-Update FLN-City FLN-State BTN-Delete 
          FLN-Country FLN-PostalCode TGL-SelectAll TGL-DeselectAll 
-         BTN-AddAccount BTN-UpdateAccount BTN-DeleteAccount 
+         BTN-AddAccount BRW-AccountInformation BTN-UpdateAccount 
+         BTN-DeleteAccount 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
   {&OPEN-BROWSERS-IN-QUERY-DEFAULT-FRAME}
   VIEW C-Win.

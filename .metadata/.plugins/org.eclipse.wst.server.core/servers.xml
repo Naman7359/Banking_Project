@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<servers>
+  <server broker-deployment-path="C:\OpenEdge\WRK\oepas1/openedge" broker-deployment-publish-rcode="true" broker-deployment-publish-source="true" broker-deployment-use-work-dir="true" broker-name="jktnolap941.oepas1 - jktnolap941" compile-on-publish="false" default.pasoe.able.application="oepas1" hostname="localhost" id="Progress Application Server for OpenEdge jktnolap941.oepas1 - jktnolap941" id-set="true" name="oepas1 in jktnolap941.oepas1 (Progress Application Server for OpenEdge 12.8)" oeexplorer-connection-profile-identifier="Explorer_1" runtime-id="Progress Application Server for OpenEdge 12.8" server-type="com.progress.openedge.pdt.pasoe.servertype" server-type-id="com.progress.openedge.pdt.pasoe.servertype" start-timeout="120" stop-timeout="30" timestamp="0"/>
+</servers>

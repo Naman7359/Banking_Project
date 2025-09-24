@@ -1,0 +1,7 @@
+======================================================================
+[25/09/22@10:01:26.685+0530] JAVA 1 [IPCLogSink] 0 C:\Users\Naman.kaushik\Desktop\Banking\.metadata\logs\OTMNCClient.log opened.
+[25/09/22@10:01:26.685+0530] JAVA 1 [IPCLogSink] 0 Logging level set to = 2
+[25/09/22@10:01:30.065+0530] JAVA 1 [IPCTcpWorker - 1] -1 Read 0 bytes from socket channel: java.nio.channels.SocketChannel[connected local=/10.110.21.238:56285 remote=JKTNOLAP941/10.110.21.238:10000] but expected -1
+[25/09/22@10:01:30.066+0530] JAVA 2 [IPCClient - 1] -1 com.progress.ipccom.IPCException: Connection closed by peer
+[25/09/22@10:01:30.066+0530] JAVA 2 [IPCClient - 1] -1 com.progress.ipccom.IPCException: This thread has been stopped
+[25/09/22@10:01:30.243+0530] JAVA 2 [IPCClient - 1] -1 com.progress.ipccom.IPCException: Attempting to send a message on a client that is not connected

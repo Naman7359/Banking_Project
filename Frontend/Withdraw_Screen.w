@@ -27,7 +27,25 @@
 /* Parameters Definitions ---                                           */
 
 /* Local Variable Definitions ---                                       */
-
+DEFINE TEMP-TABLE ttAccount NO-UNDO
+    FIELD AccountID     AS INTEGER
+    FIELD CustID        AS INTEGER
+    FIELD AccountType   AS CHARACTER  /* Saving / Loan */
+    FIELD Balance       AS DECIMAL FORMAT "->,>>>,>>9.99" INITIAL 0
+    FIELD CreatedDate   AS DATE
+    FIELD cStatus       AS CHARACTER  /* Active / Closed */
+    INDEX pkAccountID   IS PRIMARY UNIQUE AccountID
+    INDEX ixCustID      CustID.
+    
+DEFINE TEMP-TABLE ttTransaction NO-UNDO
+    FIELD TxnID         AS INTEGER
+    FIELD AccountID     AS INTEGER
+    FIELD TxnType       AS CHARACTER   /* Deposit / Withdraw / EMI */
+    FIELD Amount        AS DECIMAL
+    FIELD TxnDate       AS DATE
+    FIELD Remarks       AS CHARACTER
+    INDEX pkTxnID       IS PRIMARY UNIQUE TxnID
+    INDEX ixAccountID   AccountID.
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
@@ -43,16 +61,12 @@
 
 /* Name of first Frame and/or Browse and/or first Query                 */
 &Scoped-define FRAME-NAME Dialog-Frame
-&Scoped-define BROWSE-NAME BROWSE-8
-
-/* Definitions for DIALOG-BOX Dialog-Frame                              */
 
 /* Standard List Definitions                                            */
-&Scoped-Define ENABLED-OBJECTS RECT-14 FLN-Account# FLN-Balance ~
-FLN-TransferLimit FLN-IFSC-Code BTN-Deposit BTN-Withdraw BTN-Report ~
-CMB-Filter BROWSE-8 
-&Scoped-Define DISPLAYED-OBJECTS FLN-Account# FLN-Balance FLN-TransferLimit ~
-FLN-IFSC-Code CMB-AccountType CMB-Filter 
+&Scoped-Define ENABLED-OBJECTS RECT-15 FLN-WithdrawDate FLN-Amount ~
+FLN-ToAccount CMB-Source FLN-TransactionId BTN-Okay BTN-Cancel 
+&Scoped-Define DISPLAYED-OBJECTS FLN-WithdrawDate FLN-Amount FLN-ToAccount ~
+CMB-Source FLN-TransactionId 
 
 /* Custom List Definitions                                              */
 /* List-1,List-2,List-3,List-4,List-5,List-6                            */
@@ -67,90 +81,66 @@ FLN-IFSC-Code CMB-AccountType CMB-Filter
 /* Define a dialog box                                                  */
 
 /* Definitions of the field level widgets                               */
-DEFINE BUTTON BTN-Deposit AUTO-GO 
-     LABEL "Deposit" 
-     SIZE 10 BY 1.13
+DEFINE BUTTON BTN-Cancel AUTO-END-KEY 
+     LABEL "Cancel" 
+     SIZE 15 BY 1.13
      BGCOLOR 8 .
 
-DEFINE BUTTON BTN-Report 
-     LABEL "Report" 
-     SIZE 10 BY 1.13.
-
-DEFINE BUTTON BTN-Withdraw AUTO-END-KEY 
-     LABEL "Withdraw" 
-     SIZE 10 BY 1.13
+DEFINE BUTTON BTN-Okay AUTO-GO 
+     LABEL "Okay" 
+     SIZE 15 BY 1.13
      BGCOLOR 8 .
 
-DEFINE VARIABLE CMB-AccountType AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Account Type" 
+DEFINE VARIABLE CMB-Source AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Source" 
      VIEW-AS COMBO-BOX INNER-LINES 5
-     LIST-ITEMS "Savings" 
+     LIST-ITEMS "TO BANK" 
      DROP-DOWN-LIST
-     SIZE 41 BY .88 NO-UNDO.
+     SIZE 16 BY 1 NO-UNDO.
 
-DEFINE VARIABLE CMB-Filter AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Filter" 
-     VIEW-AS COMBO-BOX INNER-LINES 5
-     LIST-ITEMS "Item 1" 
-     DROP-DOWN-LIST
-     SIZE 16 BY .88 NO-UNDO.
-
-DEFINE VARIABLE FLN-Account# AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Account#" 
+DEFINE VARIABLE FLN-Amount AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Amount" 
      VIEW-AS FILL-IN 
      SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-Balance AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Balance" 
+DEFINE VARIABLE FLN-ToAccount AS CHARACTER FORMAT "X(256)":U 
+     LABEL "To Account" 
      VIEW-AS FILL-IN 
      SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-IFSC-Code AS CHARACTER FORMAT "X(256)":U 
-     LABEL "IFSC Code" 
+DEFINE VARIABLE FLN-TransactionId AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Transaction ID" 
      VIEW-AS FILL-IN 
      SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-TransferLimit AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Transfer Limit" 
+DEFINE VARIABLE FLN-WithdrawDate AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Withdraw Date" 
      VIEW-AS FILL-IN 
      SIZE 14 BY 1 NO-UNDO.
 
-DEFINE RECTANGLE RECT-14
+DEFINE RECTANGLE RECT-15
      EDGE-PIXELS 10  NO-FILL   
-     SIZE 69 BY 8.75.
-
-
-/* Browse definitions                                                   */
-DEFINE BROWSE BROWSE-8
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS BROWSE-8 Dialog-Frame _STRUCTURED
-  
-/* _UIB-CODE-BLOCK-END */
-&ANALYZE-RESUME
-    WITH NO-ROW-MARKERS SEPARATORS SIZE 67 BY 5.25 FIT-LAST-COLUMN.
+     SIZE 40 BY 8.25.
 
 
 /* ************************  Frame Definitions  *********************** */
 
 DEFINE FRAME Dialog-Frame
-     FLN-Account# AT ROW 4 COL 17 COLON-ALIGNED WIDGET-ID 4
-     FLN-Balance AT ROW 4 COL 45 COLON-ALIGNED WIDGET-ID 6
-     FLN-TransferLimit AT ROW 6 COL 17 COLON-ALIGNED WIDGET-ID 8
-     FLN-IFSC-Code AT ROW 6 COL 45 COLON-ALIGNED WIDGET-ID 10
-     CMB-AccountType AT ROW 8 COL 18 COLON-ALIGNED WIDGET-ID 12
-     BTN-Deposit AT ROW 10 COL 23
-     BTN-Withdraw AT ROW 10 COL 43
-     BTN-Report AT ROW 12.25 COL 61.63 WIDGET-ID 18
-     CMB-Filter AT ROW 12.5 COL 7 COLON-ALIGNED WIDGET-ID 16
-     BROWSE-8 AT ROW 14 COL 4 WIDGET-ID 200
-     "SAVING ACCOUNT DETAILS" VIEW-AS TEXT
-          SIZE 33 BY 1.75 AT ROW 1.25 COL 23 WIDGET-ID 2
+     FLN-WithdrawDate AT ROW 3.5 COL 25 COLON-ALIGNED WIDGET-ID 4
+     FLN-Amount AT ROW 5 COL 25 COLON-ALIGNED WIDGET-ID 6
+     FLN-ToAccount AT ROW 6.5 COL 25 COLON-ALIGNED WIDGET-ID 8
+     CMB-Source AT ROW 8 COL 23 COLON-ALIGNED WIDGET-ID 12
+     FLN-TransactionId AT ROW 9.5 COL 25 COLON-ALIGNED WIDGET-ID 10
+     BTN-Okay AT ROW 12 COL 10 WIDGET-ID 18
+     BTN-Cancel AT ROW 12 COL 34 WIDGET-ID 16
+     "WITHDRAW SCREEN" VIEW-AS TEXT
+          SIZE 25 BY 1.5 AT ROW 1.25 COL 16 WIDGET-ID 2
           FONT 9
-     RECT-14 AT ROW 3 COL 3 WIDGET-ID 14
-     SPACE(3.49) SKIP(8.68)
+     RECT-15 AT ROW 3 COL 9 WIDGET-ID 14
+     SPACE(9.37) SKIP(2.71)
     WITH VIEW-AS DIALOG-BOX KEEP-TAB-ORDER 
          SIDE-LABELS NO-UNDERLINE THREE-D  SCROLLABLE 
-         TITLE "<insert dialog title>"
-         DEFAULT-BUTTON BTN-Deposit CANCEL-BUTTON BTN-Withdraw WIDGET-ID 100.
+         TITLE "<insert dialog title>" WIDGET-ID 100.
 
 
 /* *********************** Procedure Settings ************************ */
@@ -170,13 +160,10 @@ DEFINE FRAME Dialog-Frame
 &ANALYZE-SUSPEND _RUN-TIME-ATTRIBUTES
 /* SETTINGS FOR DIALOG-BOX Dialog-Frame
                                                                         */
-/* BROWSE-TAB BROWSE-8 CMB-Filter Dialog-Frame */
 ASSIGN 
        FRAME Dialog-Frame:SCROLLABLE       = FALSE
        FRAME Dialog-Frame:HIDDEN           = TRUE.
 
-/* SETTINGS FOR COMBO-BOX CMB-AccountType IN FRAME Dialog-Frame
-   NO-ENABLE                                                            */
 /* _RUN-TIME-ATTRIBUTES-END */
 &ANALYZE-RESUME
 
@@ -197,7 +184,6 @@ END.
 &ANALYZE-RESUME
 
 
-&Scoped-define BROWSE-NAME BROWSE-8
 &UNDEFINE SELF-NAME
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CUSTOM _MAIN-BLOCK Dialog-Frame 
@@ -254,11 +240,10 @@ PROCEDURE enable_UI :
                These statements here are based on the "Other 
                Settings" section of the widget Property Sheets.
 ------------------------------------------------------------------------------*/
-  DISPLAY FLN-Account# FLN-Balance FLN-TransferLimit FLN-IFSC-Code 
-          CMB-AccountType CMB-Filter 
+  DISPLAY FLN-WithdrawDate FLN-Amount FLN-ToAccount CMB-Source FLN-TransactionId 
       WITH FRAME Dialog-Frame.
-  ENABLE RECT-14 FLN-Account# FLN-Balance FLN-TransferLimit FLN-IFSC-Code 
-         BTN-Deposit BTN-Withdraw BTN-Report CMB-Filter 
+  ENABLE RECT-15 FLN-WithdrawDate FLN-Amount FLN-ToAccount CMB-Source 
+         FLN-TransactionId BTN-Okay BTN-Cancel 
       WITH FRAME Dialog-Frame.
   VIEW FRAME Dialog-Frame.
   {&OPEN-BROWSERS-IN-QUERY-Dialog-Frame}

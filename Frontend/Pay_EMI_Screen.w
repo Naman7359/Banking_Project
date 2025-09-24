@@ -27,7 +27,34 @@
 /* Parameters Definitions ---                                           */
 
 /* Local Variable Definitions ---                                       */
-
+DEFINE TEMP-TABLE ttTransaction NO-UNDO
+    FIELD TxnID         AS INTEGER
+    FIELD AccountID     AS INTEGER
+    FIELD TxnType       AS CHARACTER   /* EMI */
+    FIELD Amount        AS DECIMAL
+    FIELD TxnDate       AS DATE
+    FIELD Remarks       AS CHARACTER
+    INDEX pkTxnID       IS PRIMARY UNIQUE TxnID
+    INDEX ixAccountID   AccountID.
+    
+DEFINE TEMP-TABLE ttLoanAccount NO-UNDO
+    FIELD AccountID     AS INTEGER
+    FIELD LoanAmount    AS DECIMAL
+    FIELD EMIAmount     AS DECIMAL
+    FIELD InterestRate  AS DECIMAL
+    FIELD TenureMonths  AS INTEGER
+    FIELD StartDate     AS DATE
+    INDEX pkLoanAcct    IS PRIMARY UNIQUE AccountID.
+    
+DEFINE TEMP-TABLE ttAccount NO-UNDO
+    FIELD AccountID     AS INTEGER
+    FIELD CustID        AS INTEGER
+    FIELD AccountType   AS CHARACTER  /* Saving / Loan */
+    FIELD Balance       AS DECIMAL FORMAT "->,>>>,>>9.99" INITIAL 0
+    FIELD CreatedDate   AS DATE
+    FIELD cStatus       AS CHARACTER  /* Active / Closed */
+    INDEX pkAccountID   IS PRIMARY UNIQUE AccountID
+    INDEX ixCustID      CustID.
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
@@ -43,16 +70,11 @@
 
 /* Name of first Frame and/or Browse and/or first Query                 */
 &Scoped-define FRAME-NAME Dialog-Frame
-&Scoped-define BROWSE-NAME BROWSE-9
-
-/* Definitions for DIALOG-BOX Dialog-Frame                              */
 
 /* Standard List Definitions                                            */
-&Scoped-Define ENABLED-OBJECTS RECT-16 RECT-17 FLN-LoanAccount ~
-FLN-TotalAmount FLN-PrincipalAmount FLN-RateOfIntrest FLN-AcountSubType ~
-FLN-Duration BTN-PayEMI BROWSE-9 
-&Scoped-Define DISPLAYED-OBJECTS FLN-LoanAccount FLN-TotalAmount ~
-FLN-PrincipalAmount FLN-RateOfIntrest FLN-AcountSubType FLN-Duration 
+&Scoped-Define ENABLED-OBJECTS RECT-18 FLN-EMI-Date FLN-Amount ~
+FLN-ToAccount BTN-Okay BTN-Cancel 
+&Scoped-Define DISPLAYED-OBJECTS FLN-EMI-Date FLN-Amount FLN-ToAccount 
 
 /* Custom List Definitions                                              */
 /* List-1,List-2,List-3,List-4,List-5,List-6                            */
@@ -67,81 +89,53 @@ FLN-PrincipalAmount FLN-RateOfIntrest FLN-AcountSubType FLN-Duration
 /* Define a dialog box                                                  */
 
 /* Definitions of the field level widgets                               */
-DEFINE BUTTON BTN-PayEMI 
-     LABEL "Pay EMI" 
-     SIZE 10 BY 1.13.
+DEFINE BUTTON BTN-Cancel AUTO-END-KEY 
+     LABEL "Cancel" 
+     SIZE 10 BY 1.13
+     BGCOLOR 8 .
 
-DEFINE VARIABLE FLN-AcountSubType AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Acount Sub Type" 
+DEFINE BUTTON BTN-Okay AUTO-GO 
+     LABEL "Okay" 
+     SIZE 10 BY 1.13
+     BGCOLOR 8 .
+
+DEFINE VARIABLE FLN-Amount AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Amount" 
      VIEW-AS FILL-IN 
      SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-Duration AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Duration (Mth)" 
+DEFINE VARIABLE FLN-EMI-Date AS CHARACTER FORMAT "X(256)":U 
+     LABEL "EMI Date" 
      VIEW-AS FILL-IN 
      SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-LoanAccount AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Loan Account" 
+DEFINE VARIABLE FLN-ToAccount AS CHARACTER FORMAT "X(256)":U 
+     LABEL "To Account" 
      VIEW-AS FILL-IN 
      SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-PrincipalAmount AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Principal Amount" 
-     VIEW-AS FILL-IN 
-     SIZE 14 BY 1 NO-UNDO.
-
-DEFINE VARIABLE FLN-RateOfIntrest AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Rate of Intrest" 
-     VIEW-AS FILL-IN 
-     SIZE 14 BY 1 NO-UNDO.
-
-DEFINE VARIABLE FLN-TotalAmount AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Total Amount" 
-     VIEW-AS FILL-IN 
-     SIZE 14 BY 1 NO-UNDO.
-
-DEFINE RECTANGLE RECT-16
+DEFINE RECTANGLE RECT-18
      EDGE-PIXELS 10  NO-FILL   
-     SIZE 68 BY 7.75.
-
-DEFINE RECTANGLE RECT-17
-     EDGE-PIXELS 10  NO-FILL   
-     SIZE 68 BY 5.75.
-
-
-/* Browse definitions                                                   */
-DEFINE BROWSE BROWSE-9
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS BROWSE-9 Dialog-Frame _STRUCTURED
-  
-/* _UIB-CODE-BLOCK-END */
-&ANALYZE-RESUME
-    WITH NO-ROW-MARKERS SEPARATORS SIZE 61 BY 4.5 FIT-LAST-COLUMN.
+     SIZE 31 BY 6.25.
 
 
 /* ************************  Frame Definitions  *********************** */
 
 DEFINE FRAME Dialog-Frame
-     FLN-LoanAccount AT ROW 4 COL 28 COLON-ALIGNED WIDGET-ID 4
-     FLN-TotalAmount AT ROW 4 COL 58 COLON-ALIGNED WIDGET-ID 10
-     FLN-PrincipalAmount AT ROW 5.75 COL 28 COLON-ALIGNED WIDGET-ID 6
-     FLN-RateOfIntrest AT ROW 5.75 COL 58 COLON-ALIGNED WIDGET-ID 12
-     FLN-AcountSubType AT ROW 7.5 COL 28 COLON-ALIGNED WIDGET-ID 8
-     FLN-Duration AT ROW 7.5 COL 58 COLON-ALIGNED WIDGET-ID 14
-     BTN-PayEMI AT ROW 9.25 COL 41 WIDGET-ID 22
-     BROWSE-9 AT ROW 13 COL 14 WIDGET-ID 200
-     "EMI Details" VIEW-AS TEXT
-          SIZE 13 BY 1 AT ROW 11.25 COL 40 WIDGET-ID 26
-          FONT 5
-     "LOAN ACCOUNT DETAILS" VIEW-AS TEXT
-          SIZE 31 BY 1.5 AT ROW 1.5 COL 31 WIDGET-ID 2
+     FLN-EMI-Date AT ROW 3.75 COL 14 COLON-ALIGNED WIDGET-ID 4
+     FLN-Amount AT ROW 5.25 COL 14 COLON-ALIGNED WIDGET-ID 6
+     FLN-ToAccount AT ROW 6.75 COL 14 COLON-ALIGNED WIDGET-ID 8
+     BTN-Okay AT ROW 10 COL 5
+     BTN-Cancel AT ROW 10 COL 21
+     "PAY EMI SCREEN" VIEW-AS TEXT
+          SIZE 21 BY 1.25 AT ROW 1.5 COL 8 WIDGET-ID 2
           FONT 9
-     RECT-16 AT ROW 3.25 COL 11 WIDGET-ID 24
-     RECT-17 AT ROW 12.5 COL 11 WIDGET-ID 28
-     SPACE(11.37) SKIP(0.74)
+     RECT-18 AT ROW 3 COL 3 WIDGET-ID 10
+     SPACE(0.87) SKIP(2.49)
     WITH VIEW-AS DIALOG-BOX KEEP-TAB-ORDER 
          SIDE-LABELS NO-UNDERLINE THREE-D  SCROLLABLE 
-         TITLE "<insert dialog title>" WIDGET-ID 100.
+         TITLE "<insert dialog title>"
+         DEFAULT-BUTTON BTN-Okay CANCEL-BUTTON BTN-Cancel WIDGET-ID 100.
 
 
 /* *********************** Procedure Settings ************************ */
@@ -161,7 +155,6 @@ DEFINE FRAME Dialog-Frame
 &ANALYZE-SUSPEND _RUN-TIME-ATTRIBUTES
 /* SETTINGS FOR DIALOG-BOX Dialog-Frame
                                                                         */
-/* BROWSE-TAB BROWSE-9 BTN-PayEMI Dialog-Frame */
 ASSIGN 
        FRAME Dialog-Frame:SCROLLABLE       = FALSE
        FRAME Dialog-Frame:HIDDEN           = TRUE.
@@ -186,7 +179,6 @@ END.
 &ANALYZE-RESUME
 
 
-&Scoped-define BROWSE-NAME BROWSE-9
 &UNDEFINE SELF-NAME
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CUSTOM _MAIN-BLOCK Dialog-Frame 
@@ -243,11 +235,9 @@ PROCEDURE enable_UI :
                These statements here are based on the "Other 
                Settings" section of the widget Property Sheets.
 ------------------------------------------------------------------------------*/
-  DISPLAY FLN-LoanAccount FLN-TotalAmount FLN-PrincipalAmount FLN-RateOfIntrest 
-          FLN-AcountSubType FLN-Duration 
+  DISPLAY FLN-EMI-Date FLN-Amount FLN-ToAccount 
       WITH FRAME Dialog-Frame.
-  ENABLE RECT-16 RECT-17 FLN-LoanAccount FLN-TotalAmount FLN-PrincipalAmount 
-         FLN-RateOfIntrest FLN-AcountSubType FLN-Duration BTN-PayEMI 
+  ENABLE RECT-18 FLN-EMI-Date FLN-Amount FLN-ToAccount BTN-Okay BTN-Cancel 
       WITH FRAME Dialog-Frame.
   VIEW FRAME Dialog-Frame.
   {&OPEN-BROWSERS-IN-QUERY-Dialog-Frame}

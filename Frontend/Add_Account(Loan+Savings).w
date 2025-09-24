@@ -27,7 +27,30 @@
 /* Parameters Definitions ---                                           */
 
 /* Local Variable Definitions ---                                       */
-
+DEFINE TEMP-TABLE ttAccount NO-UNDO
+    FIELD AccountID     AS INTEGER
+    FIELD CustID        AS INTEGER
+    FIELD AccountType   AS CHARACTER  /* Saving / Loan */
+    FIELD Balance       AS DECIMAL
+    FIELD CreatedDate   AS DATE
+    FIELD cStatus       AS CHARACTER  /* Active / Closed */
+    INDEX pkAccountID   IS PRIMARY UNIQUE AccountID
+    INDEX ixCustID      CustID.
+    
+DEFINE TEMP-TABLE ttSavingAccount NO-UNDO
+    FIELD AccountID     AS INTEGER
+    FIELD MinBalance    AS DECIMAL
+    INDEX pkSavingAcct  IS PRIMARY UNIQUE AccountID.
+    
+    
+DEFINE TEMP-TABLE ttLoanAccount NO-UNDO
+    FIELD AccountID     AS INTEGER
+    FIELD LoanAmount    AS DECIMAL
+    FIELD EMIAmount     AS DECIMAL
+    FIELD InterestRate  AS DECIMAL
+    FIELD TenureMonths  AS INTEGER
+    FIELD StartDate     AS DATE
+    INDEX pkLoanAcct    IS PRIMARY UNIQUE AccountID.
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
