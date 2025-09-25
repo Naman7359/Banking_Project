@@ -11,10 +11,9 @@ CLASS Backend.Controller:
     METHOD PUBLIC LONGCHAR searchCustomers(
         INPUT cFirstName AS CHARACTER,
         INPUT cLastName  AS CHARACTER,
-        INPUT cPhone     AS CHARACTER,
-        INPUT cEmail     AS CHARACTER
-    ):
-        DEFINE VARIABLE oResponse AS JsonArray NO-UNDO.
+        INPUT CustID AS CHARACTER
+        ):
+        DEFINE VARIABLE oResponse AS JsonArray  NO-UNDO.
         DEFINE VARIABLE oCust     AS JsonObject NO-UNDO.
         DEFINE VARIABLE lcResult  AS LONGCHAR   NO-UNDO.
 
@@ -22,9 +21,8 @@ CLASS Backend.Controller:
 
         FOR EACH CustomerDetails NO-LOCK
             WHERE (cFirstName = "" OR CustomerDetails.FirstName BEGINS cFirstName)
-              AND (cLastName  = "" OR CustomerDetails.LastName  BEGINS cLastName)
-              AND (cPhone     = "" OR CustomerDetails.Phone     BEGINS cPhone)
-              AND (cEmail     = "" OR CustomerDetails.Email     BEGINS cEmail):
+            AND (cLastName  = "" OR CustomerDetails.LastName  BEGINS cLastName)
+            AND (CustID = "" OR CustomerDetails.CustID BEGINS CustID).
 
             oCust = NEW JsonObject().
             oCust:Add("CustID",    CustomerDetails.CustID).

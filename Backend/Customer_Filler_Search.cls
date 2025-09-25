@@ -9,21 +9,12 @@ CLASS Backend.Customer_Filler_Search:
        Purpose: Accepts search parameters and returns JSON result string
     ------------------------------------------------------------------------------*/
     METHOD PUBLIC LONGCHAR searchCustomers(
-        INPUT cFirstName AS CHARACTER,
-        INPUT cLastName  AS CHARACTER,
-        INPUT cPhone     AS CHARACTER,
-        INPUT cEmail     AS CHARACTER):
+        INPUT iCustId AS INteger):
 
-        DEFINE VARIABLE oController AS Backend.Controller NO-UNDO.
-        DEFINE VARIABLE lcResult    AS LONGCHAR NO-UNDO.
+FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = iCustId NO-LOCK NO-ERROR.
+IF AVAILABLE CustomerDetails THEN DO:
+    END. 
 
-        /* Create Controller object and call existing search logic */
-        oController = NEW Backend.Controller().
-        lcResult = oController:searchCustomers(
-                        INPUT cFirstName,
-                        INPUT cLastName,
-                        INPUT cPhone,
-                        INPUT cEmail).
 
         RETURN lcResult.
 
