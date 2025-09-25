@@ -20,7 +20,7 @@ CLASS Backend.Customer:
         FIELD address_2      AS CHARACTER
         FIELD City           AS CHARACTER
         FIELD State          AS CHARACTER
-        FIELD postal_code    AS CHARACTER
+        FIELD postal_code    AS INTEGER
         FIELD Country        AS CHARACTER
         FIELD email          AS CHARACTER
         FIELD mobile_num     AS CHARACTER.

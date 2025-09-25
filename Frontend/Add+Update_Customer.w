@@ -40,7 +40,7 @@ DEFINE TEMP-TABLE ttCustomerDetails NO-UNDO
     FIELD address_2      AS CHARACTER
     FIELD City           AS CHARACTER
     FIELD State          AS CHARACTER
-    FIELD postal_code    AS CHARACTER
+    FIELD postal_code    AS INTEGER
     FIELD Country        AS CHARACTER
     FIELD email          AS CHARACTER
     FIELD mobile_num     AS CHARACTER.
@@ -389,7 +389,7 @@ DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
             FLN-DateOfBirth:SCREEN-VALUE IN FRAME Dialog-Frame = STRING(CustomerDetails.DOB, "99/99/99").
             FLN-Address:SCREEN-VALUE IN FRAME Dialog-Frame = CustomerDetails.Address1.
             FLN-Address_2:SCREEN-VALUE IN FRAME Dialog-Frame = CustomerDetails.Address2.
-            FLN-Postalcode:SCREEN-VALUE IN FRAME Dialog-Frame = CustomerDetails.ZipCode.
+            FLN-Postalcode:SCREEN-VALUE IN FRAME Dialog-Frame = STRING(CustomerDetails.ZipCode).
             
             /* Set combo box values directly */
             CMB-MaritalStatus:SCREEN-VALUE IN FRAME Dialog-Frame = CustomerDetails.MaritalStatus.
@@ -761,7 +761,7 @@ PROCEDURE update-customer :
         ttCustomerDetails.address_2      = FLN-Address_2:SCREEN-VALUE IN FRAME Dialog-Frame
         ttCustomerDetails.City           = CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame
         ttCustomerDetails.State          = CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame
-        ttCustomerDetails.postal_code    = FLN-PostalCode:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.postal_code    = INTEGER(FLN-PostalCode:SCREEN-VALUE IN FRAME Dialog-Frame)
         ttCustomerDetails.Country        = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame
         ttCustomerDetails.email          = ""
         ttCustomerDetails.mobile_num     = "".
@@ -842,7 +842,7 @@ PROCEDURE create-customer :
         ttCustomerDetails.address_2      = FLN-Address_2:SCREEN-VALUE IN FRAME Dialog-Frame
         ttCustomerDetails.City           = CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame
         ttCustomerDetails.State          = CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame
-        ttCustomerDetails.postal_code    = FLN-PostalCode:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.postal_code    = INTEGER(FLN-PostalCode:SCREEN-VALUE IN FRAME Dialog-Frame)
         ttCustomerDetails.Country        = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame
         ttCustomerDetails.email          = ""
         ttCustomerDetails.mobile_num     = "".

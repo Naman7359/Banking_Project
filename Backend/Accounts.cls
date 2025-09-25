@@ -89,6 +89,7 @@ CLASS Accounts:
             LoanAccountDetail.RateOfIntrest   = iRateOfInt
             LoanAccountDetail.LoanTenure      = iLoanTenure.
 
+
         /* Return AccountID */
         iAccountID = iNextAccID.
 
