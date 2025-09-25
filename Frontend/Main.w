@@ -468,18 +468,12 @@ ON CHOOSE OF BTN-AdvanceSearch IN FRAME DEFAULT-FRAME /* Advance Search */
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Search C-Win
 ON CHOOSE OF BTN-Search IN FRAME DEFAULT-FRAME /* Search */
     DO:
-        DEFINE VARIABLE oSearch  AS Backend.Customer_Filler_Search NO-UNDO.
-        DEFINE VARIABLE lcResult AS LONGCHAR                       NO-UNDO.
+        DEFINE VARIABLE oCustomer AS Backend.Customer NO-UNDO.
+        DEFINE VARIABLE lcResult  AS LONGCHAR         NO-UNDO.
 
-        EMPTY TEMP-TABLE ttCustomer.
-        EMPTY TEMP-TABLE ttAccount.
-
-        DEFINE VARIABLE cId AS INTEGER NO-UNDO.
-
-
-        /* Call wrapper class only returns JSON */
-        oSearch    = NEW Backend.Customer_Filler_Search().
-        lcResult = oSearch:searchCustomers(cId).
+        oCustomer    = NEW Backend.Customer().
+        
+        lcResult = oCustomer:getCustomerWithAccounts( INPUT INTEGER(FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME)).
 
         /* Convert JSONTemp-Tables (frontend helper procedure) */
         RUN FillCustomerTempTables.p (
