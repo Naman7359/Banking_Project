@@ -469,37 +469,14 @@ ON CHOOSE OF BTN-AdvanceSearch IN FRAME DEFAULT-FRAME /* Advance Search */
 ON CHOOSE OF BTN-Search IN FRAME DEFAULT-FRAME /* Search */
     DO:
         DEFINE VARIABLE oCustomer AS Backend.Customer NO-UNDO.
-        DEFINE VARIABLE lcResult  AS LONGCHAR         NO-UNDO.
+        DEFINE VARIABLE lcRes     AS LONGCHAR         NO-UNDO.
+        DEFINE VARIABLE lcData    AS LONGCHAR         NO-UNDO.
 
         oCustomer    = NEW Backend.Customer().
         
-        lcResult = oCustomer:getCustomerWithAccounts( INPUT INTEGER(FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME)).
-
-        /* Convert JSONTemp-Tables (frontend helper procedure) */
-        RUN FillCustomerTempTables.p (
-            INPUT lcResult,
-            OUTPUT TABLE ttCustomer,
-            OUTPUT TABLE ttAccount
-            ).
-
-        /* Show first customer if available */
-        FIND FIRST ttCustomer NO-ERROR.
-        IF AVAILABLE ttCustomer THEN 
-        DO:
-            FLN-FirstName:SCREEN-VALUE     = ttCustomer.FirstName.
-            FLN-LastName:SCREEN-VALUE      = ttCustomer.LastName.
-            FLN-Address-2:SCREEN-VALUE     = ttCustomer.Address2.
-            FLN-Address:SCREEN-VALUE       = ttCustomer.Address.
-            FLN-City:SCREEN-VALUE          = ttCustomer.City.
-            FLN-State:SCREEN-VALUE         = ttCustomer.State.
-            FLN-Country:SCREEN-VALUE       = ttCustomer.Country.
-            FLN-PostalCode:SCREEN-VALUE    = ttCustomer.PostalCode.
-            CMB-MaritalStatus:SCREEN-VALUE = ttCustomer.MaritalStatus.
-
-            BROWSE BRW-AccountInformation:REFRESH().
-        END.
-        ELSE
-            MESSAGE "Customer not found" VIEW-AS ALERT-BOX INFO.
+        lcRes = oCustomer:getCustomerWithAccounts( INPUT INTEGER(FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME)).
+        lcData = Frontend.Utility.Utility:ReadResponse(lcRes).
+        MESSAGE STRING(lcData) .
     END.
 
 /* _UIB-CODE-BLOCK-END */
