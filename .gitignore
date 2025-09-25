@@ -1,0 +1,5 @@
+# Progress ABL compiled r-code files
+*.r
+
+# PROPATH configuration file
+.propath
