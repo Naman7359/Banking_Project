@@ -96,11 +96,9 @@ DEFINE TEMP-TABLE ttAccount NO-UNDO
 
 /* Standard List Definitions                                            */
 &Scoped-Define ENABLED-OBJECTS RECT-3 RECT-4 RECT-5 RECT-6 RECT-7 ~
-FLN-CustID BTN-Search BTN-AdvanceSearch FLN-FirstName FLN-LastName ~
-CMB-MaritalStatus BTN-Add FLN-Address FLN-Address-2 BTN-Update FLN-City ~
-FLN-State BTN-Delete FLN-Country FLN-PostalCode TGL-SelectAll ~
-TGL-DeselectAll BTN-AddAccount BRW-AccountInformation BTN-UpdateAccount ~
-BTN-DeleteAccount 
+FLN-CustID BTN-Search BTN-AdvanceSearch BTN-Add BTN-Update BTN-Delete ~
+TGL-SelectAll TGL-DeselectAll BTN-AddAccount BRW-AccountInformation ~
+BTN-UpdateAccount BTN-DeleteAccount 
 &Scoped-Define DISPLAYED-OBJECTS FLN-CustID FLN-FirstName FLN-LastName ~
 CMB-MaritalStatus FLN-Address FLN-Address-2 FLN-City FLN-State FLN-Country ~
 FLN-PostalCode TGL-SelectAll TGL-DeselectAll 
@@ -339,6 +337,24 @@ ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
 /* SETTINGS FOR FRAME DEFAULT-FRAME
    FRAME-NAME                                                           */
 /* BROWSE-TAB BRW-AccountInformation BTN-AddAccount DEFAULT-FRAME */
+/* SETTINGS FOR COMBO-BOX CMB-MaritalStatus IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-Address IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-Address-2 IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-City IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-Country IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-FirstName IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-LastName IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-PostalCode IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-State IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
 IF SESSION:DISPLAY-TYPE = "GUI":U AND VALID-HANDLE(C-Win)
     THEN C-Win:HIDDEN = no.
 
@@ -398,6 +414,18 @@ ON CHOOSE OF BTN-Add IN FRAME DEFAULT-FRAME /* Add */
         RUN Frontend/Add+Update_Customer.w (INPUT 0).
     
     END.
+
+    /* Run dialog */
+    RUN Add_Account.w(
+        INPUT iCustID,        /* customer ID */
+        OUTPUT iAccountID     /* newly created account ID */
+    ).
+
+    /* Refresh Accounts browse if an account was created */
+    IF iAccountID > 0 THEN DO:
+        BROWSE BRW-AccountInformation:REFRESH().
+    END.  
+END.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME

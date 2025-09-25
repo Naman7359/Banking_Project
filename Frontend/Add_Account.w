@@ -65,7 +65,7 @@ DEFINE TEMP-TABLE ttLoanAccount NO-UNDO
 &Scoped-define PROCEDURE-TYPE Dialog-Box
 &Scoped-define DB-AWARE no
 
-/* Name of first Frame and/or Browse and/or first Query                 */
+/* Name of designated FRAME-NAME and/or first browse and/or first query */
 &Scoped-define FRAME-NAME Dialog-Frame
 
 /* Standard List Definitions                                            */
@@ -119,7 +119,7 @@ DEFINE VARIABLE CMB-LoanDuration AS CHARACTER FORMAT "X(256)":U
      VIEW-AS COMBO-BOX INNER-LINES 5
      LIST-ITEMS "1","2","3","4","5","6","7" 
      DROP-DOWN-LIST
-     SIZE 16 BY 1 NO-UNDO.
+     SIZE 16 BY .88 NO-UNDO.
 
 DEFINE VARIABLE FLN-IFSC-Code-Loan AS CHARACTER FORMAT "X(256)":U 
      LABEL "IFSC Code" 
@@ -181,24 +181,10 @@ DEFINE RECTANGLE RECT-12
 
 DEFINE FRAME Dialog-Frame
      CMB-SelectAccountType AT ROW 2 COL 46 COLON-ALIGNED WIDGET-ID 4
-     SPACE(26.99) SKIP(20.30)
+     SPACE(26.99) SKIP(20.36)
     WITH VIEW-AS DIALOG-BOX KEEP-TAB-ORDER 
          SIDE-LABELS NO-UNDERLINE THREE-D  SCROLLABLE 
          TITLE "<insert dialog title>" WIDGET-ID 100.
-
-DEFINE FRAME FRM-SavingAccount
-     CMB-AccountType-Savings AT ROW 2 COL 17 COLON-ALIGNED WIDGET-ID 2
-     CMB-AccountSubType-Savings AT ROW 2 COL 55 COLON-ALIGNED WIDGET-ID 4
-     FLN-IFSC-Code-Savings AT ROW 4 COL 17 COLON-ALIGNED WIDGET-ID 6
-     FLN-TransferLimit AT ROW 4 COL 55 COLON-ALIGNED WIDGET-ID 8
-     BTN-Create-Savings AT ROW 7 COL 20 WIDGET-ID 12
-     BTN-Cancel-Savings AT ROW 7 COL 46 WIDGET-ID 14
-     RECT-12 AT ROW 1.5 COL 4 WIDGET-ID 10
-    WITH 1 DOWN KEEP-TAB-ORDER OVERLAY 
-         SIDE-LABELS NO-UNDERLINE THREE-D 
-         AT COLUMN 4 ROW 4
-         SIZE 80 BY 8.25
-         TITLE "Add Savings Account" WIDGET-ID 200.
 
 DEFINE FRAME FRM-LoanAccount
      CMB-AccountType-Loan AT ROW 2 COL 17.25 COLON-ALIGNED WIDGET-ID 16
@@ -215,6 +201,20 @@ DEFINE FRAME FRM-LoanAccount
          AT COLUMN 4 ROW 13
          SIZE 80 BY 9.5
          TITLE "Add Loan Account" WIDGET-ID 300.
+
+DEFINE FRAME FRM-SavingAccount
+     CMB-AccountType-Savings AT ROW 2 COL 17 COLON-ALIGNED WIDGET-ID 2
+     CMB-AccountSubType-Savings AT ROW 2 COL 55 COLON-ALIGNED WIDGET-ID 4
+     FLN-IFSC-Code-Savings AT ROW 4 COL 17 COLON-ALIGNED WIDGET-ID 6
+     FLN-TransferLimit AT ROW 4 COL 55 COLON-ALIGNED WIDGET-ID 8
+     BTN-Create-Savings AT ROW 7 COL 20 WIDGET-ID 12
+     BTN-Cancel-Savings AT ROW 7 COL 46 WIDGET-ID 14
+     RECT-12 AT ROW 1.5 COL 4 WIDGET-ID 10
+    WITH 1 DOWN KEEP-TAB-ORDER OVERLAY 
+         SIDE-LABELS NO-UNDERLINE THREE-D 
+         AT COLUMN 4 ROW 4
+         SIZE 80 BY 8.25
+         TITLE "Add Savings Account" WIDGET-ID 200.
 
 
 /* *********************** Procedure Settings ************************ */
@@ -237,7 +237,7 @@ ASSIGN FRAME FRM-LoanAccount:FRAME = FRAME Dialog-Frame:HANDLE
        FRAME FRM-SavingAccount:FRAME = FRAME Dialog-Frame:HANDLE.
 
 /* SETTINGS FOR DIALOG-BOX Dialog-Frame
-                                                                        */
+   FRAME-NAME                                                           */
 
 DEFINE VARIABLE XXTABVALXX AS LOGICAL NO-UNDO.
 
@@ -364,10 +364,9 @@ RUN disable_UI.
 
 /* **********************  Internal Procedures  *********************** */
 
-
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE CreateLoanAccountInternal Dialog-Frame
-PROCEDURE CreateLoanAccountInternal:
-    /*------------------------------------------------------------------------------
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE CreateLoanAccountInternal Dialog-Frame 
+PROCEDURE CreateLoanAccountInternal :
+/*------------------------------------------------------------------------------
      Purpose:
      Notes:
     ------------------------------------------------------------------------------*/
@@ -389,11 +388,9 @@ PROCEDURE CreateLoanAccountInternal:
 
     MESSAGE "Loan Account created successfully, ID: " iNextAccID VIEW-AS ALERT-BOX INFO.
 END PROCEDURE.
-    
+
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
-
-
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE CreateSavingsAccountInternal Dialog-Frame 
 PROCEDURE CreateSavingsAccountInternal :
