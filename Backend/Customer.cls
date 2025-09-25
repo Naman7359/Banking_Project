@@ -86,7 +86,7 @@ CLASS Backend.Customer:
     METHOD PUBLIC LOGICAL AddCustomerDetails(INPUT TABLE ttCustomerDetails):
         DEFINE VARIABLE lSuccess AS LOGICAL NO-UNDO INITIAL FALSE.
         
-        DO TRANSACTION:
+        DO TRANSACTION ON ERROR UNDO, THROW:
             FOR EACH ttCustomerDetails:
                 CREATE CustomerDetails.
                 ASSIGN 
@@ -120,7 +120,7 @@ CLASS Backend.Customer:
     METHOD PUBLIC LOGICAL UpdateCustomerDetails(INPUT TABLE ttCustomerDetails):
         DEFINE VARIABLE lSuccess AS LOGICAL NO-UNDO INITIAL FALSE.
         
-        DO TRANSACTION:
+        DO TRANSACTION ON ERROR UNDO,THROW:
             FOR EACH ttCustomerDetails:
                 FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = ttCustomerDetails.CustID EXCLUSIVE-LOCK NO-ERROR.
                 IF AVAILABLE CustomerDetails THEN 
@@ -151,7 +151,7 @@ CLASS Backend.Customer:
     METHOD PUBLIC LOGICAL DeleteCustomerDetails(INPUT piCustId AS INTEGER):
         DEFINE VARIABLE lSuccess AS LOGICAL NO-UNDO INITIAL FALSE.
         
-        DO TRANSACTION:
+        DO TRANSACTION ON ERROR UNDO, THROW:
             /* Check if CustomerDetails has accounts */
             FIND FIRST CustomerAccounts WHERE CustomerAccounts.CustID = piCustId NO-LOCK NO-ERROR.
             IF AVAILABLE account THEN 
@@ -211,6 +211,7 @@ CLASS Backend.Customer:
         
         RETURN iCount.
     END METHOD.
+      
         
     METHOD PUBLIC LONGCHAR searchCustomers(
         INPUT cFirstName AS CHARACTER,

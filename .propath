@@ -7,4 +7,7 @@
     <propathentry env="all" kind="con" path="com.openedge.pdt.text.DLC_PATHS" platform="All"/>
     <propathentry env="all" kind="dir" path="@{ROOT}\Frontend" platform="All"/>
     <propathentry env="all" kind="dir" path="@{ROOT}\Backend" platform="All"/>
+    <propathentry env="all" kind="dir" path="C:\Users\Suraj.chauhan\Progress\Developer Studio 12.8\workspace\Banking_Project\Frontend" platform="Windows"/>
+    <propathentry env="all" kind="dir" path="C:\Users\Suraj.chauhan\Progress\Developer Studio 12.8\workspace\Banking_Project\Backend" platform="Windows"/>
+    <propathentry env="all" kind="dir" path="C:\Users\Suraj.chauhan\Progress\Developer Studio 12.8\workspace\Banking_Project\Backend\Utility" platform="Windows"/>
 </propath>

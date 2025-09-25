@@ -21,7 +21,7 @@
 ------------------------------------------------------------------------*/
 /*          This .W file was created with the Progress AppBuilder.       */
 /*----------------------------------------------------------------------*/
-
+USING Backend.Utiity.*.
 /* ***************************  Definitions  ************************** */
 
 /* Parameters Definitions ---         
@@ -30,19 +30,20 @@ DEFINE INPUT PARAMETER piCustomerId AS INTEGER NO-UNDO.
                                   
 
 /* Local Variable Definitions ---                                       */
-DEFINE TEMP-TABLE ttCustomer NO-UNDO
-    FIELD CustID        AS INTEGER
-    FIELD FirstName     AS CHARACTER
-    FIELD LastName      AS CHARACTER
-    FIELD Mobile        AS CHARACTER
-    FIELD Email         AS CHARACTER
-    FIELD Address       AS CHARACTER
-    FIELD City          AS CHARACTER
-    FIELD State         AS CHARACTER
-    FIELD Country       AS CHARACTER
-    FIELD PostalCode    AS CHARACTER
-    FIELD MaritalStatus AS CHARACTER
-    INDEX pkCustID IS PRIMARY UNIQUE CustID.
+DEFINE TEMP-TABLE ttCustomerDetails NO-UNDO
+    FIELD CustID         AS INTEGER
+    FIELD FirstName      AS CHARACTER
+    FIELD LastName       AS CHARACTER
+    FIELD date_of_birth  AS DATE
+    FIELD marital_status AS CHARACTER
+    FIELD address        AS CHARACTER
+    FIELD address_2      AS CHARACTER
+    FIELD City           AS CHARACTER
+    FIELD State          AS CHARACTER
+    FIELD postal_code    AS CHARACTER
+    FIELD Country        AS CHARACTER
+    FIELD email          AS CHARACTER
+    FIELD mobile_num     AS CHARACTER.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
@@ -60,11 +61,11 @@ DEFINE TEMP-TABLE ttCustomer NO-UNDO
 
 /* Standard List Definitions                                            */
 &Scoped-Define ENABLED-OBJECTS RECT-9 RECT-11 FLN-FirstName FLN-LastName ~
-FLN-DateOfBirth CMB-MaritalStatus FLN-Address FLN-Address_2 CMB-City ~
-CMB-State CMB-Country FLN-PostalCode BTN-Save BTN-Cancel 
+FLN-DateOfBirth CMB-MaritalStatus FLN-Address FLN-Address_2 CMB-State ~
+FLN-PostalCode CMB-Country CMB-City BTN-Save BTN-Cancel 
 &Scoped-Define DISPLAYED-OBJECTS FLN-FirstName FLN-LastName FLN-DateOfBirth ~
-CMB-MaritalStatus FLN-Address FLN-Address_2 CMB-City CMB-State CMB-Country ~
-FLN-PostalCode 
+CMB-MaritalStatus FLN-Address FLN-Address_2 CMB-State FLN-PostalCode ~
+CMB-Country CMB-City 
 
 /* Custom List Definitions                                              */
 /* List-1,List-2,List-3,List-4,List-5,List-6                            */
@@ -127,7 +128,7 @@ DEFINE VARIABLE FLN-Address_2     AS CHARACTER FORMAT "X(256)":U
     VIEW-AS FILL-IN 
     SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-DateOfBirth   AS DATE      FORMAT "99/99/99":U INITIAL ? 
+DEFINE VARIABLE FLN-DateOfBirth   AS DATE      FORMAT "99/99/99":U 
     LABEL "Date of Birth" 
     VIEW-AS FILL-IN 
     SIZE 14 BY 1 NO-UNDO.
@@ -165,10 +166,10 @@ DEFINE FRAME Dialog-Frame
     CMB-MaritalStatus AT ROW 5.52 COL 53 COLON-ALIGNED WIDGET-ID 12
     FLN-Address AT ROW 8 COL 19 COLON-ALIGNED WIDGET-ID 6
     FLN-Address_2 AT ROW 8 COL 53 COLON-ALIGNED WIDGET-ID 16
-    CMB-City AT ROW 9.52 COL 19 COLON-ALIGNED WIDGET-ID 18
     CMB-State AT ROW 9.52 COL 53 COLON-ALIGNED WIDGET-ID 20
+    FLN-PostalCode AT ROW 9.57 COL 19 COLON-ALIGNED WIDGET-ID 30
     CMB-Country AT ROW 11 COL 53 COLON-ALIGNED WIDGET-ID 24
-    FLN-PostalCode AT ROW 11.48 COL 19 COLON-ALIGNED WIDGET-ID 30
+    CMB-City AT ROW 11.24 COL 19 COLON-ALIGNED WIDGET-ID 18
     BTN-Save AT ROW 13 COL 28
     BTN-Cancel AT ROW 13 COL 45
     "ADD/UPDATE CUSTOMER" VIEW-AS TEXT
@@ -228,47 +229,52 @@ ON WINDOW-CLOSE OF FRAME Dialog-Frame /* <insert dialog title> */
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Save Dialog-Frame
 ON CHOOSE OF BTN-Save IN FRAME Dialog-Frame /* Save */
     DO:
-        /* If customer ID exists, UPDATE. Otherwise, CREATE */
+        
         IF piCustomerId > 0 THEN 
-        DO:
-            /* UPDATE - Find and overwrite */
-            FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = piCustomerId EXCLUSIVE-LOCK NO-ERROR.
-            IF AVAILABLE CustomerDetails THEN 
-            DO:
-                /* Brutally overwrite everything */
-                ASSIGN
-                    CustomerDetails.FirstName     = FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame
-                    CustomerDetails.LastName      = FLN-LastName:SCREEN-VALUE IN FRAME Dialog-Frame  
-                    CustomerDetails.DOB           = DATE(FLN-DateOfBirth:SCREEN-VALUE IN FRAME Dialog-Frame)
-                    CustomerDetails.MaritalStatus = CMB-MaritalStatus:SCREEN-VALUE IN FRAME Dialog-Frame
-                    CustomerDetails.Address1      = FLN-Address:SCREEN-VALUE IN FRAME Dialog-Frame
-                    CustomerDetails.Address2      = FLN-Address_2:SCREEN-VALUE IN FRAME Dialog-Frame
-                    CustomerDetails.Country       = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame
-                    CustomerDetails.State         = CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame
-                    CustomerDetails.City          = CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame
-                    CustomerDetails.ZipCode       = FLN-PostalCode:SCREEN-VALUE IN FRAME Dialog-Frame.
-                
-                MESSAGE "Customer updated!" VIEW-AS ALERT-BOX.
-            END.
-        END.
+            RUN update-customer.
         ELSE 
-        DO:
-            /* CREATE - New customer */
-            CREATE CustomerDetails.
-            ASSIGN
-                CustomerDetails.FirstName     = FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame
-                CustomerDetails.LastName      = FLN-LastName:SCREEN-VALUE IN FRAME Dialog-Frame
-                CustomerDetails.DOB           = DATE(FLN-DateOfBirth:SCREEN-VALUE IN FRAME Dialog-Frame)
-                CustomerDetails.MaritalStatus = CMB-MaritalStatus:SCREEN-VALUE IN FRAME Dialog-Frame
-                CustomerDetails.Address1      = FLN-Address:SCREEN-VALUE IN FRAME Dialog-Frame
-                CustomerDetails.Address2      = FLN-Address_2:SCREEN-VALUE IN FRAME Dialog-Frame
-                CustomerDetails.Country       = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame
-                CustomerDetails.State         = CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame
-                CustomerDetails.City          = CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame
-                CustomerDetails.ZipCode       = FLN-Postalcode:SCREEN-VALUE IN FRAME Dialog-Frame.
-            
-            MESSAGE "Customer created!" VIEW-AS ALERT-BOX.
-        END.
+            RUN create-customer.
+        /* If customer ID exists, UPDATE. Otherwise, CREATE */
+        /*        IF piCustomerId > 0 THEN                                                                            */
+        /*        DO:                                                                                                 */
+        /*            /* UPDATE - Find and overwrite */                                                               */
+        /*            FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = piCustomerId EXCLUSIVE-LOCK NO-ERROR. */
+        /*            IF AVAILABLE CustomerDetails THEN                                                               */
+        /*            DO:                                                                                             */
+        /*                /* Brutally overwrite everything */                                                         */
+        /*                ASSIGN                                                                                      */
+        /*                    CustomerDetails.FirstName     = FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame        */
+        /*                    CustomerDetails.LastName      = FLN-LastName:SCREEN-VALUE IN FRAME Dialog-Frame         */
+        /*                    CustomerDetails.DOB           = DATE(FLN-DateOfBirth:SCREEN-VALUE IN FRAME Dialog-Frame)*/
+        /*                    CustomerDetails.MaritalStatus = CMB-MaritalStatus:SCREEN-VALUE IN FRAME Dialog-Frame    */
+        /*                    CustomerDetails.Address1      = FLN-Address:SCREEN-VALUE IN FRAME Dialog-Frame          */
+        /*                    CustomerDetails.Address2      = FLN-Address_2:SCREEN-VALUE IN FRAME Dialog-Frame        */
+        /*                    CustomerDetails.Country       = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame          */
+        /*                    CustomerDetails.State         = CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame            */
+        /*                    CustomerDetails.City          = CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame             */
+        /*                    CustomerDetails.ZipCode       = FLN-PostalCode:SCREEN-VALUE IN FRAME Dialog-Frame.      */
+        /*                                                                                                            */
+        /*                MESSAGE "Customer updated!" VIEW-AS ALERT-BOX.                                              */
+        /*            END.                                                                                            */
+        /*        END.                                                                                                */
+        /*        ELSE                                                                                                */
+        /*        DO:                                                                                                 */
+        /*            /* CREATE - New customer */                                                                     */
+        /*            CREATE CustomerDetails.                                                                         */
+        /*            ASSIGN                                                                                          */
+        /*                CustomerDetails.FirstName     = FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame            */
+        /*                CustomerDetails.LastName      = FLN-LastName:SCREEN-VALUE IN FRAME Dialog-Frame             */
+        /*                CustomerDetails.DOB           = DATE(FLN-DateOfBirth:SCREEN-VALUE IN FRAME Dialog-Frame)    */
+        /*                CustomerDetails.MaritalStatus = CMB-MaritalStatus:SCREEN-VALUE IN FRAME Dialog-Frame        */
+        /*                CustomerDetails.Address1      = FLN-Address:SCREEN-VALUE IN FRAME Dialog-Frame              */
+        /*                CustomerDetails.Address2      = FLN-Address_2:SCREEN-VALUE IN FRAME Dialog-Frame            */
+        /*                CustomerDetails.Country       = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame              */
+        /*                CustomerDetails.State         = CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame                */
+        /*                CustomerDetails.City          = CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame                 */
+        /*                CustomerDetails.ZipCode       = FLN-Postalcode:SCREEN-VALUE IN FRAME Dialog-Frame.          */
+        /*                                                                                                            */
+        /*            MESSAGE "Customer created!" VIEW-AS ALERT-BOX.                                                  */
+        /*        END.                                                                                                */
     
         APPLY "WINDOW-CLOSE" TO SELF.
     END.
@@ -313,6 +319,15 @@ ON VALUE-CHANGED OF CMB-Country IN FRAME Dialog-Frame /* Country */
 &ANALYZE-RESUME
 
 
+&Scoped-define SELF-NAME CMB-MaritalStatus
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL CMB-MaritalStatus Dialog-Frame
+
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
+
 &Scoped-define SELF-NAME CMB-State
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL CMB-State Dialog-Frame
 ON VALUE-CHANGED OF CMB-State IN FRAME Dialog-Frame /* State */
@@ -341,7 +356,6 @@ ON VALUE-CHANGED OF FLN-PostalCode IN FRAME Dialog-Frame /* Postal Code */
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
-
 
 
 &UNDEFINE SELF-NAME
@@ -390,6 +404,8 @@ DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
         RUN populate-all-countries.
         RUN populate-all-states.
         RUN populate-all-cities.
+        RUN populate-marital-status.
+        
     END.
     WAIT-FOR GO OF FRAME {&FRAME-NAME}.
 END.
@@ -722,6 +738,130 @@ PROCEDURE populate-cities-by-state:
     
 END PROCEDURE.
 
+
+PROCEDURE update-customer :
+    /*------------------------------------------------------------------------------
+      Purpose:     Update existing customer using Backend.Customer class
+    ------------------------------------------------------------------------------*/
+    
+    DEFINE VARIABLE oCustomer AS Backend.Customer NO-UNDO.
+    DEFINE VARIABLE lSuccess  AS LOGICAL          NO-UNDO.
+
+    /* Clear and create temp-table record */
+    EMPTY TEMP-TABLE ttCustomerDetails.
+    CREATE ttCustomerDetails.
+    
+    ASSIGN 
+        ttCustomerDetails.CustID         = piCustomerId
+        ttCustomerDetails.FirstName      = FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.LastName       = FLN-LastName:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.date_of_birth  = DATE(FLN-DateOfBirth:SCREEN-VALUE IN FRAME Dialog-Frame)
+        ttCustomerDetails.marital_status = CMB-MaritalStatus:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.address        = FLN-Address:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.address_2      = FLN-Address_2:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.City           = CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.State          = CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.postal_code    = FLN-PostalCode:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.Country        = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.email          = ""
+        ttCustomerDetails.mobile_num     = "".
+
+    /* Create controller and call update method */
+    oCustomer = NEW Backend.Customer().
+    lSuccess = oCustomer:UpdateCustomerDetails(INPUT TABLE ttCustomerDetails).
+    
+    /* Show result */
+    IF lSuccess THEN
+        MESSAGE "Customer updated successfully!" VIEW-AS ALERT-BOX INFO.
+    ELSE
+        MESSAGE "Failed to update customer!" VIEW-AS ALERT-BOX ERROR.
+
+    /* Cleanup */
+    DELETE OBJECT oCustomer.
+
+END PROCEDURE.
+
+PROCEDURE populate-marital-status :
+/*------------------------------------------------------------------------------
+  Purpose:     Populate marital status combo box using Utility.UtilityManager
+  Parameters:  <none>
+  Notes:       Called from main block to load marital status options
+------------------------------------------------------------------------------*/
+    
+    DEFINE VARIABLE oUtility AS UtilityManager NO-UNDO.
+    DEFINE VARIABLE cMaritalStatusList AS CHARACTER NO-UNDO.
+    
+    /* Clear the combo box first */
+    CMB-MaritalStatus:LIST-ITEMS IN FRAME Dialog-Frame = "".
+    
+    /* Create utility manager and get marital status list */
+    oUtility = NEW UtilityManager().
+    cMaritalStatusList = oUtility:GetMaritalStatusList().
+    
+    /* Populate the combo box */
+    IF cMaritalStatusList <> "" THEN 
+    DO:
+        CMB-MaritalStatus:LIST-ITEMS IN FRAME Dialog-Frame = cMaritalStatusList.
+    END.
+    ELSE 
+    DO:
+        MESSAGE "No marital status options available" VIEW-AS ALERT-BOX WARNING.
+    END.
+    
+    /* Clean up */
+    DELETE OBJECT oUtility.
+    
+    CATCH eError AS Progress.Lang.Error:
+        MESSAGE "Error loading marital status options:" eError:GetMessage(1) VIEW-AS ALERT-BOX ERROR.
+        IF VALID-OBJECT(oUtility) THEN
+            DELETE OBJECT oUtility.
+    END CATCH.
+
+END PROCEDURE.
+
+
+
+PROCEDURE create-customer :
+    /*------------------------------------------------------------------------------
+      Purpose:     Create new customer using Backend.Customer class
+    ------------------------------------------------------------------------------*/
+    
+    DEFINE VARIABLE oCustomer AS Backend.Customer NO-UNDO.
+    DEFINE VARIABLE lSuccess  AS LOGICAL          NO-UNDO.
+
+    /* Clear and create temp-table record */
+    EMPTY TEMP-TABLE ttCustomerDetails.
+    CREATE ttCustomerDetails.
+    
+    ASSIGN 
+        ttCustomerDetails.FirstName      = FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.LastName       = FLN-LastName:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.date_of_birth  = DATE(FLN-DateOfBirth:SCREEN-VALUE IN FRAME Dialog-Frame)
+        ttCustomerDetails.marital_status = CMB-MaritalStatus:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.address        = FLN-Address:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.address_2      = FLN-Address_2:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.City           = CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.State          = CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.postal_code    = FLN-PostalCode:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.Country        = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame
+        ttCustomerDetails.email          = ""
+        ttCustomerDetails.mobile_num     = "".
+
+    /* Create controller and call create method */
+    oCustomer = NEW Backend.Customer().
+    lSuccess = oCustomer:AddCustomerDetails(INPUT TABLE ttCustomerDetails).
+    
+    /* Show result */
+    IF lSuccess THEN
+        MESSAGE "Customer created successfully!" VIEW-AS ALERT-BOX INFO.
+    ELSE
+        MESSAGE "Failed to create customer!" VIEW-AS ALERT-BOX ERROR.
+
+    /* Cleanup */
+    DELETE OBJECT oCustomer.
+
+END PROCEDURE.
+
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
@@ -757,12 +897,12 @@ PROCEDURE enable_UI :
                    Settings" section of the widget Property Sheets.
     ------------------------------------------------------------------------------*/
     DISPLAY FLN-FirstName FLN-LastName FLN-DateOfBirth CMB-MaritalStatus 
-        FLN-Address FLN-Address_2 CMB-City CMB-State CMB-Country 
-        FLN-PostalCode 
+        FLN-Address FLN-Address_2 CMB-State FLN-PostalCode CMB-Country 
+        CMB-City 
         WITH FRAME Dialog-Frame.
     ENABLE RECT-9 RECT-11 FLN-FirstName FLN-LastName FLN-DateOfBirth 
-        CMB-MaritalStatus FLN-Address FLN-Address_2 CMB-City CMB-State 
-        CMB-Country FLN-PostalCode BTN-Save BTN-Cancel 
+        CMB-MaritalStatus FLN-Address FLN-Address_2 CMB-State FLN-PostalCode 
+        CMB-Country CMB-City BTN-Save BTN-Cancel 
         WITH FRAME Dialog-Frame.
     VIEW FRAME Dialog-Frame.
     {&OPEN-BROWSERS-IN-QUERY-Dialog-Frame}

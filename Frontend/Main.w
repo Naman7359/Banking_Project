@@ -276,12 +276,12 @@ DEFINE FRAME DEFAULT-FRAME
     "Account Information" VIEW-AS TEXT
     SIZE 23 BY 1 AT ROW 16.76 COL 54 WIDGET-ID 66
     FONT 5
-    "CUSTOMER INFORMATION" VIEW-AS TEXT
-    SIZE-PIXELS 264 BY 56 AT Y 8 X 382 WIDGET-ID 24
-    FONT 1
     "Customer Details" VIEW-AS TEXT
     SIZE 19 BY 1 AT ROW 5.71 COL 56 WIDGET-ID 62
     FONT 5
+    "CUSTOMER INFORMATION" VIEW-AS TEXT
+    SIZE-PIXELS 264 BY 56 AT Y 8 X 382 WIDGET-ID 24
+    FONT 1
     RECT-3 AT ROW 3.52 COL 13 WIDGET-ID 32
     RECT-4 AT ROW 7.24 COL 13 WIDGET-ID 58
     RECT-5 AT ROW 8.95 COL 100 WIDGET-ID 60
@@ -395,7 +395,7 @@ ON WINDOW-CLOSE OF C-Win /* <insert window title> */
 ON CHOOSE OF BTN-Add IN FRAME DEFAULT-FRAME /* Add */
     DO:
 
-        RUN frontend/Add+Update_Customer.w (INPUT 0).
+        RUN Frontend/Add+Update_Customer.w (INPUT 0).
     
     END.
 
@@ -430,35 +430,35 @@ ON CHOOSE OF BTN-AdvanceSearch IN FRAME DEFAULT-FRAME /* Advance Search */
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Delete C-Win
 ON CHOOSE OF BTN-Delete IN FRAME DEFAULT-FRAME /* Delete */
     DO:
-        DEFINE VARIABLE oController         AS backend.Customer NO-UNDO.
-        DEFINE VARIABLE iSelectedCustomerId AS INTEGER                     NO-UNDO.
-        DEFINE VARIABLE lDeleteResult       AS LOGICAL                     NO-UNDO.
+        DEFINE VARIABLE iSelectedCustomerId AS INTEGER NO-UNDO.
+        DEFINE VARIABLE lDeleteResult       AS LOGICAL NO-UNDO.
+
+        /* Get selected customer ID from UI */
+        iSelectedCustomerId = INTEGER(FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME) NO-ERROR.
     
-        /* Get selected customer ID from your UI (browse, fill-in, etc.) */
-        iSelectedCustomerId = INTEGER(FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME).
-    
-        /* Create controller instance */
-        oController = NEW backend.Customer().
-    
-        /* Attempt to delete customer */
-        lDeleteResult = oController:DeleteCustomer(iSelectedCustomerId).
-    
-        /* Refresh your UI if deletion was successful */
-        IF lDeleteResult THEN 
+        /* Validate customer ID */
+        IF iSelectedCustomerId <= 0 THEN 
         DO:
-            /* Refresh customer browse/list */
-            RUN RefreshCustomerBrowse.
-            /* Clear customer details form */
-            RUN ClearCustomerForm.
+            MESSAGE "Please select a valid customer to delete!"
+                VIEW-AS ALERT-BOX WARNING BUTTONS OK.
+            RETURN.
         END.
+
+        /* Call deletion procedure with UI refresh */
+        RUN DeleteCustomerWithRefresh(INPUT iSelectedCustomerId, 
+            OUTPUT lDeleteResult).
     
-        /* Clean up */
-        DELETE OBJECT oController NO-ERROR. 
+        /* Optional: Additional processing based on result */
+        IF NOT lDeleteResult THEN 
+        DO:
+            /* Handle deletion failure if needed */
+            MESSAGE "Customer deletion was not completed."
+                VIEW-AS ALERT-BOX INFO BUTTONS OK.
+        END. 
     END.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
-
 
 
 &Scoped-define SELF-NAME BTN-Search
@@ -497,6 +497,18 @@ ON CHOOSE OF BTN-Search IN FRAME DEFAULT-FRAME /* Search */
 &ANALYZE-RESUME
 
 
+&Scoped-define SELF-NAME BTN-Update
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Update C-Win
+ON CHOOSE OF BTN-Update IN FRAME DEFAULT-FRAME /* Update */
+    DO:
+        RUN Frontend/Add+Update_Customer.w (INPUT 0).
+    END.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
+
 &Scoped-define BROWSE-NAME BRW-AccountInformation
 &UNDEFINE SELF-NAME
 
@@ -526,6 +538,49 @@ DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
     IF NOT THIS-PROCEDURE:PERSISTENT THEN
         WAIT-FOR CLOSE OF THIS-PROCEDURE.
 END.
+
+
+
+
+PROCEDURE DeleteCustomerById:
+    /*------------------------------------------------------------------------
+        Purpose     : Delete a customer by ID
+        Parameters  : INPUT customer ID, OUTPUT success indicator  
+        Notes       : Pure deletion logic without UI dependencies
+      ----------------------------------------------------------------------*/
+
+    DEFINE INPUT  PARAMETER piCustomerId    AS INTEGER NO-UNDO.
+    DEFINE OUTPUT PARAMETER plDeleteSuccess AS LOGICAL NO-UNDO INITIAL FALSE.
+    
+    DEFINE VARIABLE oController AS backend.Customer NO-UNDO.
+    
+    /* Validate input parameter */
+    IF piCustomerId <= 0 THEN 
+    DO:
+        MESSAGE "Invalid Customer ID: " + STRING(piCustomerId)
+            VIEW-AS ALERT-BOX ERROR BUTTONS OK.
+        RETURN.
+    END.
+    
+    /* Main deletion logic */
+    DO ON ERROR UNDO, THROW:
+        
+        oController = NEW backend.Customer().
+        plDeleteSuccess = oController:DeleteCustomer(piCustomerId).
+    END.
+    CATCH eError AS Progress.Lang.Error:
+        MESSAGE "Error deleting customer: " + eError:GetMessage(1)
+            VIEW-AS ALERT-BOX ERROR BUTTONS OK.
+        plDeleteSuccess = FALSE.
+    END CATCH.
+    
+    FINALLY:
+        IF VALID-OBJECT(oController) THEN
+            DELETE OBJECT oController NO-ERROR.
+    END FINALLY.
+
+END PROCEDURE.
+
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
