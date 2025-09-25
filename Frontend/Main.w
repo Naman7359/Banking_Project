@@ -183,7 +183,7 @@ DEFINE VARIABLE FLN-Country AS CHARACTER FORMAT "X(256)":U
 DEFINE VARIABLE FLN-CustID AS CHARACTER FORMAT "X(256)":U 
      LABEL "Customer ID" 
      VIEW-AS FILL-IN 
-     SIZE 26 BY 1 NO-UNDO.
+     SIZE 30 BY 1 NO-UNDO.
 
 DEFINE VARIABLE FLN-FirstName AS CHARACTER FORMAT "X(256)":U 
      LABEL "First Name" 
@@ -285,7 +285,7 @@ DEFINE FRAME DEFAULT-FRAME
           SIZE 19 BY 1 AT ROW 5.72 COL 56 WIDGET-ID 62
           FONT 5
      RECT-3 AT ROW 3.5 COL 13 WIDGET-ID 32
-     RECT-4 AT ROW 7.22 COL 13 WIDGET-ID 58
+     RECT-4 AT ROW 7 COL 12 WIDGET-ID 58
      RECT-5 AT ROW 8.97 COL 100 WIDGET-ID 60
      RECT-6 AT ROW 18 COL 13 WIDGET-ID 68
      RECT-7 AT ROW 18.81 COL 95.25 WIDGET-ID 80
@@ -387,6 +387,37 @@ DO:
         APPLY "CLOSE":U TO THIS-PROCEDURE.
         RETURN NO-APPLY.
     END.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
+&Scoped-define SELF-NAME BTN-AddAccount
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-AddAccount C-Win
+ON CHOOSE OF BTN-AddAccount IN FRAME DEFAULT-FRAME /* Add Account */
+DO:
+DEFINE VARIABLE iCustID AS INTEGER NO-UNDO.
+    DEFINE VARIABLE iAccountID AS INTEGER NO-UNDO.
+
+    /* Get selected customer */
+    iCustID = INTEGER(FLN-CustID:SCREEN-VALUE).
+
+    IF iCustID = 0 THEN DO:
+        MESSAGE "Please select a customer before adding account." VIEW-AS ALERT-BOX ERROR.
+        RETURN.
+    END.
+
+    /* Run dialog */
+    RUN Add_Account.w (
+        INPUT iCustID,        /* customer ID */
+        OUTPUT iAccountID     /* newly created account ID */
+    ).
+
+    /* Refresh Accounts browse if an account was created */
+    IF iAccountID > 0 THEN DO:
+        BROWSE BRW-AccountInformation:REFRESH().
+    END.  
+END.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME

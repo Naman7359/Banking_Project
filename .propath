@@ -5,6 +5,6 @@
     <propathentry env="gui" kind="con" path="com.openedge.pdt.text.GUI_LIBRARIES" platform="All"/>
     <propathentry env="tty" kind="con" path="com.openedge.pdt.text.TTY_LIBRARIES" platform="All"/>
     <propathentry env="all" kind="con" path="com.openedge.pdt.text.DLC_PATHS" platform="All"/>
-    <propathentry env="all" kind="dir" path="@{ROOT}\Frontend" platform="All"/>
     <propathentry env="all" kind="dir" path="@{ROOT}\Backend" platform="All"/>
+    <propathentry env="all" kind="dir" path="@{ROOT}\Frontend" platform="All"/>
 </propath>
