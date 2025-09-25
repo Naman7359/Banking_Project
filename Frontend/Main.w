@@ -408,7 +408,7 @@ DEFINE VARIABLE iCustID AS INTEGER NO-UNDO.
     END.
 
     /* Run dialog */
-    RUN Add_Account.w (
+    RUN Add_Account.w(
         INPUT iCustID,        /* customer ID */
         OUTPUT iAccountID     /* newly created account ID */
     ).
