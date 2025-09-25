@@ -230,54 +230,7 @@ END.
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Search Dialog-Frame
 ON CHOOSE OF BTN-Search IN FRAME Dialog-Frame /* Search */
 DO:
-    DEFINE VARIABLE oController AS Backend.Customer NO-UNDO.
-    DEFINE VARIABLE lcResult    AS LONGCHAR          NO-UNDO.
-    DEFINE VARIABLE oParser     AS ObjectModelParser NO-UNDO.
-    DEFINE VARIABLE oArray      AS JsonArray         NO-UNDO.
-    DEFINE VARIABLE oCust       AS JsonObject        NO-UNDO.
-    DEFINE VARIABLE i           AS INTEGER           NO-UNDO.
-
-    /* Clear previous browse records */
-    EMPTY TEMP-TABLE ttCustomer.
-
-    /* Collect input values from UI fields */
-    DEFINE VARIABLE cFirstName AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE cLastName  AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE cPhone     AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE cEmail     AS CHARACTER NO-UNDO.
-
-    ASSIGN
-        cFirstName = FLN-FirstName:SCREEN-VALUE
-        cLastName  = FLN-LastName:SCREEN-VALUE
-        cPhone     = FLN-Phone:SCREEN-VALUE
-        cEmail     = FLN-Email:SCREEN-VALUE.
-
-    /* Call backend search method */
-    oController = NEW Backend.Customer().
-    lcResult    = oController:searchCustomers(
-                        INPUT cFirstName,
-                        INPUT cLastName,
-                        INPUT cPhone,
-                        INPUT cEmail).
-
-    /* Parse JSON result into temp-table */
-    oParser = NEW ObjectModelParser().
-    oArray  = CAST(oParser:Parse(lcResult), JsonArray).
-
-    DO i = 1 TO oArray:Length:
-        oCust = oArray:GetJsonObject(i).
-
-        CREATE ttCustomer.
-        ASSIGN
-            ttCustomer.CustID    = INTEGER(oCust:GetInteger("CustID"))
-            ttCustomer.FirstName = oCust:GetCharacter("FirstName")
-            ttCustomer.LastName  = oCust:GetCharacter("LastName")
-            ttCustomer.Phone     = oCust:GetCharacter("Phone")
-            ttCustomer.Email     = oCust:GetCharacter("Email").
-    END.
-
-    /* Refresh browse so user sees updated records */
-    BROWSE BRW-CustomerDetails:REFRESH().
+  RUN DoCustomerSearch.
 END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -327,6 +280,65 @@ END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
+
+
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE DoCustomerSearch Dialog-Frame
+PROCEDURE DoCustomerSearch:
+    DEFINE VARIABLE oSearch   AS Backend.Customer_Filler_Search NO-UNDO.
+    DEFINE VARIABLE lcResult  AS LONGCHAR NO-UNDO.
+    DEFINE VARIABLE oParser   AS ObjectModelParser NO-UNDO.
+    DEFINE VARIABLE oArray    AS JsonArray NO-UNDO.
+    DEFINE VARIABLE oCust     AS JsonObject NO-UNDO.
+    DEFINE VARIABLE i         AS INTEGER NO-UNDO.
+
+    /* Clear previous browse records */
+    EMPTY TEMP-TABLE ttCustomer.
+
+    /* Collect input values from UI fields */
+    DEFINE VARIABLE cFirstName AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE cLastName  AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE cPhone     AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE cEmail     AS CHARACTER NO-UNDO.
+
+    ASSIGN
+        cFirstName = FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame.
+        cLastName  = FLN-LastName:SCREEN-VALUE IN FRAME Dialog-Frame.
+        cPhone     = FLN-Phone:SCREEN-VALUE IN FRAME Dialog-Frame.
+        cEmail     = FLN-Email:SCREEN-VALUE IN FRAME Dialog-Frame.
+
+    /* Call backend search class */
+    oSearch  = NEW Backend.Customer_Filler_Search().
+    lcResult = oSearch:searchCustomers(
+                    INPUT cFirstName,
+                    INPUT cLastName,
+                    INPUT cPhone,
+                    INPUT cEmail).
+
+    /* Parse JSON result into temp-table */
+    oParser = NEW ObjectModelParser().
+    oArray  = CAST(oParser:Parse(lcResult), JsonArray).
+
+    DO i = 1 TO oArray:Length:
+        oCust = oArray:GetJsonObject(i).
+
+        CREATE ttCustomer.
+        ASSIGN
+            ttCustomer.CustID    = INTEGER(oCust:GetInteger("CustID"))
+            ttCustomer.FirstName = oCust:GetCharacter("FirstName")
+            ttCustomer.LastName  = oCust:GetCharacter("LastName")
+            ttCustomer.Phone     = oCust:GetCharacter("Phone")
+            ttCustomer.Email     = oCust:GetCharacter("Email").
+    END.
+
+    /* Refresh browse so user sees updated records */
+    BROWSE BRW-CustomerDetails:REFRESH().
+END PROCEDURE.
+
+    
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE enable_UI Dialog-Frame  _DEFAULT-ENABLE
 PROCEDURE enable_UI :

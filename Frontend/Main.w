@@ -96,11 +96,9 @@ DEFINE TEMP-TABLE ttAccount NO-UNDO
 
 /* Standard List Definitions                                            */
 &Scoped-Define ENABLED-OBJECTS RECT-3 RECT-4 RECT-5 RECT-6 RECT-7 ~
-FLN-CustID BTN-Search BTN-AdvanceSearch FLN-FirstName FLN-LastName ~
-CMB-MaritalStatus BTN-Add FLN-Address FLN-Address-2 BTN-Update FLN-City ~
-FLN-State BTN-Delete FLN-Country FLN-PostalCode TGL-SelectAll ~
-TGL-DeselectAll BTN-AddAccount BRW-AccountInformation BTN-UpdateAccount ~
-BTN-DeleteAccount 
+FLN-CustID BTN-Search BTN-AdvanceSearch BTN-Add BTN-Update BTN-Delete ~
+TGL-SelectAll TGL-DeselectAll BTN-AddAccount BRW-AccountInformation ~
+BTN-UpdateAccount BTN-DeleteAccount 
 &Scoped-Define DISPLAYED-OBJECTS FLN-CustID FLN-FirstName FLN-LastName ~
 CMB-MaritalStatus FLN-Address FLN-Address-2 FLN-City FLN-State FLN-Country ~
 FLN-PostalCode TGL-SelectAll TGL-DeselectAll 
@@ -178,10 +176,10 @@ DEFINE VARIABLE FLN-Country       AS CHARACTER FORMAT "X(256)":U
     VIEW-AS FILL-IN 
     SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-CustID        AS CHARACTER FORMAT "X(256)":U 
+DEFINE VARIABLE FLN-CustID        AS INTEGER   FORMAT "->,>>>,>>9":U INITIAL 0 
     LABEL "Customer ID" 
     VIEW-AS FILL-IN 
-    SIZE 26 BY 1 NO-UNDO.
+    SIZE 30 BY 1 NO-UNDO.
 
 DEFINE VARIABLE FLN-FirstName     AS CHARACTER FORMAT "X(256)":U 
     LABEL "First Name" 
@@ -339,6 +337,24 @@ ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
 /* SETTINGS FOR FRAME DEFAULT-FRAME
    FRAME-NAME                                                           */
 /* BROWSE-TAB BRW-AccountInformation BTN-AddAccount DEFAULT-FRAME */
+/* SETTINGS FOR COMBO-BOX CMB-MaritalStatus IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-Address IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-Address-2 IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-City IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-Country IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-FirstName IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-LastName IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-PostalCode IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-State IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
 IF SESSION:DISPLAY-TYPE = "GUI":U AND VALID-HANDLE(C-Win)
     THEN C-Win:HIDDEN = no.
 
@@ -396,7 +412,37 @@ ON CHOOSE OF BTN-Add IN FRAME DEFAULT-FRAME /* Add */
     DO:
 
         RUN Frontend/Add+Update_Customer.w (INPUT 0).
-    
+    END.
+    /* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+&Scoped-define SELF-NAME BTN-AddAccount
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-AddAccount C-Win
+ON CHOOSE OF BTN-AddAccount IN FRAME DEFAULT-FRAME /* Add Account */
+    DO:
+        DEFINE VARIABLE iCustID    AS INTEGER NO-UNDO.
+        DEFINE VARIABLE iAccountID AS INTEGER NO-UNDO.
+
+        /* Get selected customer */
+        iCustID = INTEGER(FLN-CustID:SCREEN-VALUE).
+
+        IF iCustID = 0 THEN 
+        DO:
+            MESSAGE "Please select a customer before adding account." VIEW-AS ALERT-BOX ERROR.
+            RETURN.
+        END.
+
+        /* Run dialog */
+        RUN Add_Account.w(
+            INPUT iCustID,        /* customer ID */
+            OUTPUT iAccountID     /* newly created account ID */
+            ).
+
+        /* Refresh Accounts browse if an account was created */
+        IF iAccountID > 0 THEN 
+        DO:
+            BROWSE BRW-AccountInformation:REFRESH().
+        END.  
     END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -465,7 +511,16 @@ ON CHOOSE OF BTN-Delete IN FRAME DEFAULT-FRAME /* Delete */
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Search C-Win
 ON CHOOSE OF BTN-Search IN FRAME DEFAULT-FRAME /* Search */
     DO:
+
+        DEFINE VARIABLE oCustomer AS Backend.Customer NO-UNDO.
+        DEFINE VARIABLE lcRes     AS LONGCHAR         NO-UNDO.
+        DEFINE VARIABLE lcData    AS LONGCHAR         NO-UNDO.
+
+        oCustomer    = NEW Backend.Customer().
         
+        lcRes = oCustomer:getCustomerWithAccounts( INPUT INTEGER(FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME)).
+        lcData = Frontend.Utility.Utility:ReadResponse(lcRes).
+        MESSAGE STRING(lcData) .
     END.
 
 /* _UIB-CODE-BLOCK-END */
