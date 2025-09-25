@@ -465,32 +465,7 @@ ON CHOOSE OF BTN-Delete IN FRAME DEFAULT-FRAME /* Delete */
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Search C-Win
 ON CHOOSE OF BTN-Search IN FRAME DEFAULT-FRAME /* Search */
     DO:
-        EMPTY TEMP-TABLE ttCustomer.
-        EMPTY TEMP-TABLE ttAccount.
-
-        /* Lookup customer by CustID */
-        IF AVAILABLE ttCustomer THEN 
-        DO:
-            /* Populate UI fields */
-            FLN-FirstName:SCREEN-VALUE       = ttCustomer.FirstName.
-            FLN-LastName:SCREEN-VALUE        = ttCustomer.LastName.
-            FLN-Address-2:SCREEN-VALUE       = ttCustomer.Address2.   /* <─ New */
-            FLN-Address:SCREEN-VALUE         = ttCustomer.Address.
-            FLN-City:SCREEN-VALUE            = ttCustomer.City.
-            FLN-State:SCREEN-VALUE           = ttCustomer.State.
-            FLN-Country:SCREEN-VALUE         = ttCustomer.Country.
-            FLN-PostalCode:SCREEN-VALUE      = ttCustomer.PostalCode.
-            CMB-MaritalStatus:SCREEN-VALUE   = ttCustomer.MaritalStatus.
-
-            /* Load accounts */
-            RUN Load_Accounts.p (INPUT ttCustomer.CustID, OUTPUT TABLE ttAccount).
-
-            BROWSE BRW-AccountInformation:REFRESH().
-        END.
-        ELSE 
-        DO:
-            MESSAGE "Customer not found" VIEW-AS ALERT-BOX INFO.
-        END. 
+        
     END.
 
 /* _UIB-CODE-BLOCK-END */
