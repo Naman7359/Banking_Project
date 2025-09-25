@@ -86,135 +86,135 @@ DEFINE TEMP-TABLE ttLoanAccount NO-UNDO
 
 /* Definitions of the field level widgets                               */
 DEFINE VARIABLE CMB-SelectAccountType AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Select Account Type" 
-    VIEW-AS COMBO-BOX INNER-LINES 5
-    LIST-ITEMS "Savings","Loan" 
-    DROP-DOWN-LIST
-    SIZE 12 BY 1 NO-UNDO.
+     LABEL "Select Account Type" 
+     VIEW-AS COMBO-BOX INNER-LINES 5
+     LIST-ITEMS "Savings","Loan" 
+     DROP-DOWN-LIST
+     SIZE 12 BY 1 NO-UNDO.
 
 DEFINE BUTTON BTN-Cancel-Loan 
-    LABEL "Cancel" 
-    SIZE 15 BY 1.13.
+     LABEL "Cancel" 
+     SIZE 15 BY 1.13.
 
 DEFINE BUTTON BTN-Create-Loan 
-    LABEL "Create" 
-    SIZE 15 BY 1.13.
+     LABEL "Create" 
+     SIZE 15 BY 1.13.
 
 DEFINE VARIABLE CMB-AccountSubType-Loan AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Account Sub Type" 
-    VIEW-AS COMBO-BOX INNER-LINES 5
-    LIST-ITEMS "Item 1" 
-    DROP-DOWN-LIST
-    SIZE 16 BY 1 NO-UNDO.
+     LABEL "Account Sub Type" 
+     VIEW-AS COMBO-BOX INNER-LINES 5
+     LIST-ITEMS "Item 1" 
+     DROP-DOWN-LIST
+     SIZE 16 BY 1 NO-UNDO.
 
-DEFINE VARIABLE CMB-AccountType-Loan    AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Account Type" 
-    VIEW-AS COMBO-BOX INNER-LINES 5
-    LIST-ITEMS "Loan" 
-    DROP-DOWN-LIST
-    SIZE 16 BY 1 NO-UNDO.
+DEFINE VARIABLE CMB-AccountType-Loan AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Account Type" 
+     VIEW-AS COMBO-BOX INNER-LINES 5
+     LIST-ITEMS "Loan" 
+     DROP-DOWN-LIST
+     SIZE 16 BY 1 NO-UNDO.
 
-DEFINE VARIABLE CMB-LoanDuration        AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Loan Duration (yrs)" 
-    VIEW-AS COMBO-BOX INNER-LINES 5
-    LIST-ITEMS "1","2","3","4","5","6","7" 
-    DROP-DOWN-LIST
-    SIZE 16 BY 1 NO-UNDO.
+DEFINE VARIABLE CMB-LoanDuration AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Loan Duration (yrs)" 
+     VIEW-AS COMBO-BOX INNER-LINES 5
+     LIST-ITEMS "1","2","3","4","5","6","7" 
+     DROP-DOWN-LIST
+     SIZE 16 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-IFSC-Code-Loan      AS CHARACTER FORMAT "X(256)":U 
-    LABEL "IFSC Code" 
-    VIEW-AS FILL-IN 
-    SIZE 16 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-IFSC-Code-Loan AS CHARACTER FORMAT "X(256)":U 
+     LABEL "IFSC Code" 
+     VIEW-AS FILL-IN 
+     SIZE 16 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-RateOfIntrest       AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Rate of Intrest (%)" 
-    VIEW-AS FILL-IN 
-    SIZE 14 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-RateOfIntrest AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Rate of Intrest (%)" 
+     VIEW-AS FILL-IN 
+     SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-TotalLoanAmmount    AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Total Loan" 
-    VIEW-AS FILL-IN 
-    SIZE 20 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-TotalLoanAmmount AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Total Loan" 
+     VIEW-AS FILL-IN 
+     SIZE 20 BY 1 NO-UNDO.
 
 DEFINE RECTANGLE RECT-13
-    EDGE-PIXELS 10  NO-FILL   
-    SIZE 75 BY 6.5.
+     EDGE-PIXELS 10  NO-FILL   
+     SIZE 75 BY 6.5.
 
 DEFINE BUTTON BTN-Cancel-Savings 
-    LABEL "Cancel" 
-    SIZE 15 BY 1.13.
+     LABEL "Cancel" 
+     SIZE 15 BY 1.13.
 
 DEFINE BUTTON BTN-Create-Savings 
-    LABEL "Create" 
-    SIZE 15 BY 1.13.
+     LABEL "Create" 
+     SIZE 15 BY 1.13.
 
 DEFINE VARIABLE CMB-AccountSubType-Savings AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Account Sub Type" 
-    VIEW-AS COMBO-BOX INNER-LINES 5
-    LIST-ITEMS "Item 1" 
-    DROP-DOWN-LIST
-    SIZE 16 BY 1 NO-UNDO.
+     LABEL "Account Sub Type" 
+     VIEW-AS COMBO-BOX INNER-LINES 5
+     LIST-ITEMS "Item 1" 
+     DROP-DOWN-LIST
+     SIZE 16 BY 1 NO-UNDO.
 
-DEFINE VARIABLE CMB-AccountType-Savings    AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Account Type" 
-    VIEW-AS COMBO-BOX INNER-LINES 5
-    LIST-ITEMS "Savings" 
-    DROP-DOWN-LIST
-    SIZE 16 BY 1 NO-UNDO.
+DEFINE VARIABLE CMB-AccountType-Savings AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Account Type" 
+     VIEW-AS COMBO-BOX INNER-LINES 5
+     LIST-ITEMS "Savings" 
+     DROP-DOWN-LIST
+     SIZE 16 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-IFSC-Code-Savings      AS CHARACTER FORMAT "X(256)":U 
-    LABEL "IFSC Code" 
-    VIEW-AS FILL-IN 
-    SIZE 16 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-IFSC-Code-Savings AS CHARACTER FORMAT "X(256)":U 
+     LABEL "IFSC Code" 
+     VIEW-AS FILL-IN 
+     SIZE 16 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-TransferLimit          AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Transfer Limit" 
-    VIEW-AS FILL-IN 
-    SIZE 16 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-TransferLimit AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Transfer Limit" 
+     VIEW-AS FILL-IN 
+     SIZE 16 BY 1 NO-UNDO.
 
 DEFINE RECTANGLE RECT-12
-    EDGE-PIXELS 10  NO-FILL   
-    SIZE 74 BY 5.
+     EDGE-PIXELS 10  NO-FILL   
+     SIZE 74 BY 5.
 
 
 /* ************************  Frame Definitions  *********************** */
 
 DEFINE FRAME Dialog-Frame
-    CMB-SelectAccountType AT ROW 10 COL 101 COLON-ALIGNED WIDGET-ID 4
-    SPACE(1.24) SKIP(11.26)
+     CMB-SelectAccountType AT ROW 2 COL 46 COLON-ALIGNED WIDGET-ID 4
+     SPACE(26.99) SKIP(20.30)
     WITH VIEW-AS DIALOG-BOX KEEP-TAB-ORDER 
-    SIDE-LABELS NO-UNDERLINE THREE-D  SCROLLABLE 
-    TITLE "<insert dialog title>" WIDGET-ID 100.
-
-DEFINE FRAME FRM-LoanAccount
-    CMB-AccountType-Loan AT ROW 2 COL 17.25 COLON-ALIGNED WIDGET-ID 16
-    CMB-AccountSubType-Loan AT ROW 2 COL 55.25 COLON-ALIGNED WIDGET-ID 18
-    FLN-IFSC-Code-Loan AT ROW 4 COL 17.25 COLON-ALIGNED WIDGET-ID 20
-    CMB-LoanDuration AT ROW 4 COL 55.25 COLON-ALIGNED WIDGET-ID 22
-    FLN-TotalLoanAmmount AT ROW 6 COL 17 COLON-ALIGNED WIDGET-ID 24
-    FLN-RateOfIntrest AT ROW 6 COL 57.25 COLON-ALIGNED WIDGET-ID 26
-    BTN-Create-Loan AT ROW 8.25 COL 19 WIDGET-ID 30
-    BTN-Cancel-Loan AT ROW 8.25 COL 46 WIDGET-ID 32
-    RECT-13 AT ROW 1.5 COL 3 WIDGET-ID 28
-    WITH 1 DOWN KEEP-TAB-ORDER OVERLAY 
-    SIDE-LABELS NO-UNDERLINE THREE-D 
-    AT COLUMN 3 ROW 11
-    SIZE 80 BY 9.5
-    TITLE "Add Loan Account" WIDGET-ID 300.
+         SIDE-LABELS NO-UNDERLINE THREE-D  SCROLLABLE 
+         TITLE "<insert dialog title>" WIDGET-ID 100.
 
 DEFINE FRAME FRM-SavingAccount
-    CMB-AccountType-Savings AT ROW 2 COL 17 COLON-ALIGNED WIDGET-ID 2
-    CMB-AccountSubType-Savings AT ROW 2 COL 55 COLON-ALIGNED WIDGET-ID 4
-    FLN-IFSC-Code-Savings AT ROW 4 COL 17 COLON-ALIGNED WIDGET-ID 6
-    FLN-TransferLimit AT ROW 4 COL 55 COLON-ALIGNED WIDGET-ID 8
-    BTN-Create-Savings AT ROW 7 COL 20 WIDGET-ID 12
-    BTN-Cancel-Savings AT ROW 7 COL 46 WIDGET-ID 14
-    RECT-12 AT ROW 1.5 COL 4 WIDGET-ID 10
+     CMB-AccountType-Savings AT ROW 2 COL 17 COLON-ALIGNED WIDGET-ID 2
+     CMB-AccountSubType-Savings AT ROW 2 COL 55 COLON-ALIGNED WIDGET-ID 4
+     FLN-IFSC-Code-Savings AT ROW 4 COL 17 COLON-ALIGNED WIDGET-ID 6
+     FLN-TransferLimit AT ROW 4 COL 55 COLON-ALIGNED WIDGET-ID 8
+     BTN-Create-Savings AT ROW 7 COL 20 WIDGET-ID 12
+     BTN-Cancel-Savings AT ROW 7 COL 46 WIDGET-ID 14
+     RECT-12 AT ROW 1.5 COL 4 WIDGET-ID 10
     WITH 1 DOWN KEEP-TAB-ORDER OVERLAY 
-    SIDE-LABELS NO-UNDERLINE THREE-D 
-    AT COLUMN 3 ROW 2
-    SIZE 80 BY 8.25
-    TITLE "Add Savings Account" WIDGET-ID 200.
+         SIDE-LABELS NO-UNDERLINE THREE-D 
+         AT COLUMN 4 ROW 4
+         SIZE 80 BY 8.25
+         TITLE "Add Savings Account" WIDGET-ID 200.
+
+DEFINE FRAME FRM-LoanAccount
+     CMB-AccountType-Loan AT ROW 2 COL 17.25 COLON-ALIGNED WIDGET-ID 16
+     CMB-AccountSubType-Loan AT ROW 2 COL 55.25 COLON-ALIGNED WIDGET-ID 18
+     FLN-IFSC-Code-Loan AT ROW 4 COL 17.25 COLON-ALIGNED WIDGET-ID 20
+     CMB-LoanDuration AT ROW 4 COL 55.25 COLON-ALIGNED WIDGET-ID 22
+     FLN-TotalLoanAmmount AT ROW 6 COL 17 COLON-ALIGNED WIDGET-ID 24
+     FLN-RateOfIntrest AT ROW 6 COL 57.25 COLON-ALIGNED WIDGET-ID 26
+     BTN-Create-Loan AT ROW 8.25 COL 19 WIDGET-ID 30
+     BTN-Cancel-Loan AT ROW 8.25 COL 46 WIDGET-ID 32
+     RECT-13 AT ROW 1.5 COL 3 WIDGET-ID 28
+    WITH 1 DOWN KEEP-TAB-ORDER OVERLAY 
+         SIDE-LABELS NO-UNDERLINE THREE-D 
+         AT COLUMN 4 ROW 13
+         SIZE 80 BY 9.5
+         TITLE "Add Loan Account" WIDGET-ID 300.
 
 
 /* *********************** Procedure Settings ************************ */
@@ -233,23 +233,21 @@ DEFINE FRAME FRM-SavingAccount
 
 &ANALYZE-SUSPEND _RUN-TIME-ATTRIBUTES
 /* REPARENT FRAME */
-ASSIGN 
-    FRAME FRM-LoanAccount:FRAME   = FRAME Dialog-Frame:HANDLE
-    FRAME FRM-SavingAccount:FRAME = FRAME Dialog-Frame:HANDLE.
+ASSIGN FRAME FRM-LoanAccount:FRAME = FRAME Dialog-Frame:HANDLE
+       FRAME FRM-SavingAccount:FRAME = FRAME Dialog-Frame:HANDLE.
 
 /* SETTINGS FOR DIALOG-BOX Dialog-Frame
                                                                         */
 
 DEFINE VARIABLE XXTABVALXX AS LOGICAL NO-UNDO.
 
-ASSIGN 
-    XXTABVALXX = FRAME FRM-SavingAccount:MOVE-BEFORE-TAB-ITEM (CMB-SelectAccountType:HANDLE IN FRAME Dialog-Frame)
-    XXTABVALXX = FRAME FRM-LoanAccount:MOVE-AFTER-TAB-ITEM (CMB-SelectAccountType:HANDLE IN FRAME Dialog-Frame)
-    /* END-ASSIGN-TABS */.
+ASSIGN XXTABVALXX = FRAME FRM-SavingAccount:MOVE-AFTER-TAB-ITEM (CMB-SelectAccountType:HANDLE IN FRAME Dialog-Frame)
+       XXTABVALXX = FRAME FRM-SavingAccount:MOVE-BEFORE-TAB-ITEM (FRAME FRM-LoanAccount:HANDLE)
+/* END-ASSIGN-TABS */.
 
 ASSIGN 
-    FRAME Dialog-Frame:SCROLLABLE = FALSE
-    FRAME Dialog-Frame:HIDDEN     = TRUE.
+       FRAME Dialog-Frame:SCROLLABLE       = FALSE
+       FRAME Dialog-Frame:HIDDEN           = TRUE.
 
 /* SETTINGS FOR FRAME FRM-LoanAccount
                                                                         */
@@ -271,7 +269,7 @@ ASSIGN
 &Scoped-define SELF-NAME Dialog-Frame
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL Dialog-Frame Dialog-Frame
 ON WINDOW-CLOSE OF FRAME Dialog-Frame /* <insert dialog title> */
-    DO:
+DO:
         APPLY "END-ERROR":U TO SELF.
     END.
 
@@ -283,37 +281,8 @@ ON WINDOW-CLOSE OF FRAME Dialog-Frame /* <insert dialog title> */
 &Scoped-define SELF-NAME BTN-Create-Loan
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Create-Loan Dialog-Frame
 ON CHOOSE OF BTN-Create-Loan IN FRAME FRM-LoanAccount /* Create */
-    DO:
-        DEFINE VARIABLE iNextAccID  AS INTEGER NO-UNDO.
-        DEFINE VARIABLE iLoanTenure AS INTEGER NO-UNDO.
-
-        /* Get next account number from sequence */
-        iNextAccID = NEXT-VALUE(AccountIDSeq).
-
-        /* Read Loan Tenure from combo-box */
-        iLoanTenure = INTEGER(CMB-LoanDuration:SCREEN-VALUE).
-
-        /* Insert into CustomerAccounts */
-        CREATE CustomerAccounts.
-        ASSIGN
-            CustomerAccounts.AcctNum       = iNextAccID
-            CustomerAccounts.CustID        = iCustID
-            CustomerAccounts.AccountTypeId = 2.  /* 2 = Loan */
-
-        /* Insert into LoanAccountDetail */
-        CREATE LoanAccountDetail.
-        ASSIGN
-            LoanAccountDetail.AccNum          = iNextAccID
-            LoanAccountDetail.BranchCode      = INTEGER (FLN-IFSC-Code-Loan:SCREEN-VALUE)
-            LoanAccountDetail.TotalLoanAmount = INTEGER(FLN-TotalLoanAmmount:SCREEN-VALUE)
-            LoanAccountDetail.RateOfIntrest   = INTEGER(FLN-RateOfIntrest:SCREEN-VALUE)
-            LoanAccountDetail.LoanTenure      = iLoanTenure.
-
-        /* Return new AccountID */
-        iAccountID = iNextAccID.
-
-        MESSAGE "Loan Account created successfully." VIEW-AS ALERT-BOX INFO.
-        APPLY "CLOSE" TO THIS-PROCEDURE.  
+DO:
+        RUN CreateLoanAccountInternal.  
     END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -324,31 +293,8 @@ ON CHOOSE OF BTN-Create-Loan IN FRAME FRM-LoanAccount /* Create */
 &Scoped-define SELF-NAME BTN-Create-Savings
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Create-Savings Dialog-Frame
 ON CHOOSE OF BTN-Create-Savings IN FRAME FRM-SavingAccount /* Create */
-    DO:
-        DEFINE VARIABLE iNextAccID AS INTEGER NO-UNDO.
-
-        /* Get next account number from sequence */
-        iNextAccID = NEXT-VALUE(AccountIDSeq).
-
-        /* Insert into CustomerAccounts */
-        CREATE CustomerAccounts.
-        ASSIGN
-            CustomerAccounts.AcctNum       = iNextAccID
-            CustomerAccounts.CustID        = iCustID
-            CustomerAccounts.AccountTypeId = 1.   /* 1 = Savings (you can also bind this to combo-box later) */
-
-        /* Insert into SavingAccountDetail */
-        CREATE SavingAccountDetail.
-        ASSIGN
-            SavingAccountDetail.AcctNum        = iNextAccID
-            SavingAccountDetail.BranchCode     = FLN-IFSC-Code-Savings:SCREEN-VALUE
-            SavingAccountDetail.Transfer_limit = INTEGER(FLN-TransferLimit:SCREEN-VALUE).
-
-        /* Return new AccountID */
-        iAccountID = iNextAccID.
-
-        MESSAGE "Savings Account created successfully." VIEW-AS ALERT-BOX INFO.
-        APPLY "CLOSE" TO THIS-PROCEDURE.
+DO:
+        RUN CreateSavingsAccountInternal.
     END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -358,7 +304,7 @@ ON CHOOSE OF BTN-Create-Savings IN FRAME FRM-SavingAccount /* Create */
 &Scoped-define SELF-NAME CMB-AccountType-Savings
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL CMB-AccountType-Savings Dialog-Frame
 ON VALUE-CHANGED OF CMB-AccountType-Savings IN FRAME FRM-SavingAccount /* Account Type */
-    DO:
+DO:
 
     END.
 
@@ -370,7 +316,7 @@ ON VALUE-CHANGED OF CMB-AccountType-Savings IN FRAME FRM-SavingAccount /* Accoun
 &Scoped-define SELF-NAME CMB-SelectAccountType
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL CMB-SelectAccountType Dialog-Frame
 ON VALUE-CHANGED OF CMB-SelectAccountType IN FRAME Dialog-Frame /* Select Account Type */
-    DO:
+DO:
         CASE SELF:SCREEN-VALUE:
             WHEN "SAVINGS" THEN 
                 DO:
@@ -419,31 +365,29 @@ RUN disable_UI.
 /* **********************  Internal Procedures  *********************** */
 
 
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE CreateSavingsAccountInternal Dialog-Frame
-/* Internal procedure to call Accounts.cls for Savings */
-
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE CreateLoanAccountInternal Dialog-Frame
 PROCEDURE CreateLoanAccountInternal:
     /*------------------------------------------------------------------------------
      Purpose:
      Notes:
     ------------------------------------------------------------------------------*/
-    DEFINE VARIABLE iNextAccountID AS INTEGER  NO-UNDO.
-    DEFINE VARIABLE oAccounts      AS Accounts NO-UNDO. 
+    DEFINE VARIABLE iNextAccID AS INTEGER NO-UNDO.
+    DEFINE VARIABLE oAccounts  AS CLASS Accounts NO-UNDO.
+
+    /* create object */
     oAccounts = NEW Accounts().
-/*   oAccounts:CreateLoanAccount(                                          */
-/*         INPUT iCustID,                                                  */
-/*        INPUT FLN-IFSC-Code-Loan:SCREEN-VALUE in FRAme FRM-SavingAccount,*/
-/*        INPUT INTEGER(NUM-VAL(TRIM(FLN-TotalLoanAmmount:SCREEN-VALUE))), */
-/*        INPUT INTEGER(NUM-VAL(TRIM(FLN-RateOfIntrest:SCREEN-VALUE))),    */
-/*        INPUT INTEGER(CMB-LoanDuration:SCREEN-VALUE),                    */
-/*        OUTPUT iNextAccID                                                */
-/*        ).                                                               */
 
-    /* You can now use iNewAccountID if needed */
-    MESSAGE "Loan Account created successfully, ID: " iNextAccountID VIEW-AS ALERT-BOX INFO.
+    /* call method */
+    oAccounts:CreateLoanAccount(
+        iCustID,
+        FLN-IFSC-Code-Loan:SCREEN-VALUE IN FRAME FRM-LoanAccount,
+        INTEGER(FLN-TotalLoanAmmount:SCREEN-VALUE),
+        INTEGER(FLN-RateOfIntrest:SCREEN-VALUE),
+        INTEGER(CMB-LoanDuration:SCREEN-VALUE),
+        OUTPUT iNextAccID
+    ).
 
-
+    MESSAGE "Loan Account created successfully, ID: " iNextAccID VIEW-AS ALERT-BOX INFO.
 END PROCEDURE.
     
 /* _UIB-CODE-BLOCK-END */
@@ -451,48 +395,45 @@ END PROCEDURE.
 
 
 
-
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE CreateSavingsAccountInternal Dialog-Frame
-PROCEDURE CreateSavingsAccountInternal:
-    /*------------------------------------------------------------------------------
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE CreateSavingsAccountInternal Dialog-Frame 
+PROCEDURE CreateSavingsAccountInternal :
+/*------------------------------------------------------------------------------
      Purpose:
      Notes:
     ------------------------------------------------------------------------------*/
-    DEFINE VARIABLE iNextAccountID AS INTEGER NO-UNDO.
+    DEFINE VARIABLE iNextAccountID AS INTEGER  NO-UNDO.
     DEFINE VARIABLE oAccounts      AS Accounts NO-UNDO. 
     oAccounts = NEW Accounts().
   
-  /* Call backend class method */
-  oAccounts:CreateSavingsAccount(
-      INPUT iCustID,
-      INPUT FLN-IFSC-Code-Savings:SCREEN-VALUE in FRAme FRM-SavingAccount,
-      INPUT INTEGER(FLN-TransferLimit:SCREEN-VALUE),
-      output iNextAccountID).
+    /* Call backend class method */
+    oAccounts:CreateSavingsAccount(
+        INPUT iCustID,
+        INPUT FLN-IFSC-Code-Savings:SCREEN-VALUE in FRAme FRM-SavingAccount,
+        INPUT INTEGER(FLN-TransferLimit:SCREEN-VALUE),
+        output iNextAccountID).
 
     MESSAGE "Savings Account created successfully, ID: " iNextAccountID VIEW-AS ALERT-BOX INFO.
 
 
 END PROCEDURE.
-    
+
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
-
-
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE disable_UI Dialog-Frame  _DEFAULT-DISABLE
 PROCEDURE disable_UI :
-    /*------------------------------------------------------------------------------
-      Purpose:     DISABLE the User Interface
-      Parameters:  <none>
-      Notes:       Here we clean-up the user-interface by deleting
-                   dynamic widgets we have created and/or hide 
-                   frames.  This procedure is usually called when
-                   we are ready to "clean-up" after running.
-    ------------------------------------------------------------------------------*/
-    /* Hide all frames. */
-    HIDE FRAME Dialog-Frame.
-    HIDE FRAME FRM-LoanAccount.
-    HIDE FRAME FRM-SavingAccount.
+/*------------------------------------------------------------------------------
+  Purpose:     DISABLE the User Interface
+  Parameters:  <none>
+  Notes:       Here we clean-up the user-interface by deleting
+               dynamic widgets we have created and/or hide 
+               frames.  This procedure is usually called when
+               we are ready to "clean-up" after running.
+------------------------------------------------------------------------------*/
+  /* Hide all frames. */
+  HIDE FRAME Dialog-Frame.
+  HIDE FRAME FRM-LoanAccount.
+  HIDE FRAME FRM-SavingAccount.
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
@@ -500,35 +441,35 @@ END PROCEDURE.
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE enable_UI Dialog-Frame  _DEFAULT-ENABLE
 PROCEDURE enable_UI :
-    /*------------------------------------------------------------------------------
-      Purpose:     ENABLE the User Interface
-      Parameters:  <none>
-      Notes:       Here we display/view/enable the widgets in the
-                   user-interface.  In addition, OPEN all queries
-                   associated with each FRAME and BROWSE.
-                   These statements here are based on the "Other 
-                   Settings" section of the widget Property Sheets.
-    ------------------------------------------------------------------------------*/
-    DISPLAY CMB-SelectAccountType 
-        WITH FRAME Dialog-Frame.
-    ENABLE CMB-SelectAccountType 
-        WITH FRAME Dialog-Frame.
-    VIEW FRAME Dialog-Frame.
-    {&OPEN-BROWSERS-IN-QUERY-Dialog-Frame}
-    DISPLAY CMB-AccountType-Savings CMB-AccountSubType-Savings 
-        FLN-IFSC-Code-Savings FLN-TransferLimit 
-        WITH FRAME FRM-SavingAccount.
-    ENABLE RECT-12 CMB-AccountSubType-Savings FLN-IFSC-Code-Savings 
-        FLN-TransferLimit BTN-Create-Savings BTN-Cancel-Savings 
-        WITH FRAME FRM-SavingAccount.
-    {&OPEN-BROWSERS-IN-QUERY-FRM-SavingAccount}
-    DISPLAY CMB-AccountType-Loan CMB-AccountSubType-Loan FLN-IFSC-Code-Loan 
-        CMB-LoanDuration FLN-TotalLoanAmmount FLN-RateOfIntrest 
-        WITH FRAME FRM-LoanAccount.
-    ENABLE RECT-13 CMB-AccountSubType-Loan FLN-IFSC-Code-Loan CMB-LoanDuration 
-        FLN-TotalLoanAmmount FLN-RateOfIntrest BTN-Create-Loan BTN-Cancel-Loan 
-        WITH FRAME FRM-LoanAccount.
-    {&OPEN-BROWSERS-IN-QUERY-FRM-LoanAccount}
+/*------------------------------------------------------------------------------
+  Purpose:     ENABLE the User Interface
+  Parameters:  <none>
+  Notes:       Here we display/view/enable the widgets in the
+               user-interface.  In addition, OPEN all queries
+               associated with each FRAME and BROWSE.
+               These statements here are based on the "Other 
+               Settings" section of the widget Property Sheets.
+------------------------------------------------------------------------------*/
+  DISPLAY CMB-SelectAccountType 
+      WITH FRAME Dialog-Frame.
+  ENABLE CMB-SelectAccountType 
+      WITH FRAME Dialog-Frame.
+  VIEW FRAME Dialog-Frame.
+  {&OPEN-BROWSERS-IN-QUERY-Dialog-Frame}
+  DISPLAY CMB-AccountType-Savings CMB-AccountSubType-Savings 
+          FLN-IFSC-Code-Savings FLN-TransferLimit 
+      WITH FRAME FRM-SavingAccount.
+  ENABLE RECT-12 CMB-AccountSubType-Savings FLN-IFSC-Code-Savings 
+         FLN-TransferLimit BTN-Create-Savings BTN-Cancel-Savings 
+      WITH FRAME FRM-SavingAccount.
+  {&OPEN-BROWSERS-IN-QUERY-FRM-SavingAccount}
+  DISPLAY CMB-AccountType-Loan CMB-AccountSubType-Loan FLN-IFSC-Code-Loan 
+          CMB-LoanDuration FLN-TotalLoanAmmount FLN-RateOfIntrest 
+      WITH FRAME FRM-LoanAccount.
+  ENABLE RECT-13 CMB-AccountSubType-Loan FLN-IFSC-Code-Loan CMB-LoanDuration 
+         FLN-TotalLoanAmmount FLN-RateOfIntrest BTN-Create-Loan BTN-Cancel-Loan 
+      WITH FRAME FRM-LoanAccount.
+  {&OPEN-BROWSERS-IN-QUERY-FRM-LoanAccount}
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
