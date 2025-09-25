@@ -98,11 +98,9 @@ DEFINE TEMP-TABLE ttAccount NO-UNDO
 
 /* Standard List Definitions                                            */
 &Scoped-Define ENABLED-OBJECTS RECT-3 RECT-4 RECT-5 RECT-6 RECT-7 ~
-FLN-CustID BTN-Search BTN-AdvanceSearch FLN-FirstName FLN-LastName ~
-CMB-MaritalStatus BTN-Add FLN-Address FLN-Address-2 BTN-Update FLN-City ~
-FLN-State BTN-Delete FLN-Country FLN-PostalCode TGL-SelectAll ~
-TGL-DeselectAll BTN-AddAccount BRW-AccountInformation BTN-UpdateAccount ~
-BTN-DeleteAccount 
+FLN-CustID BTN-Search BTN-AdvanceSearch BTN-Add BTN-Update BTN-Delete ~
+TGL-SelectAll TGL-DeselectAll BTN-AddAccount BRW-AccountInformation ~
+BTN-UpdateAccount BTN-DeleteAccount 
 &Scoped-Define DISPLAYED-OBJECTS FLN-CustID FLN-FirstName FLN-LastName ~
 CMB-MaritalStatus FLN-Address FLN-Address-2 FLN-City FLN-State FLN-Country ~
 FLN-PostalCode TGL-SelectAll TGL-DeselectAll 
@@ -158,7 +156,7 @@ DEFINE VARIABLE CMB-MaritalStatus AS CHARACTER FORMAT "X(256)":U
      VIEW-AS COMBO-BOX INNER-LINES 5
      LIST-ITEMS "Single","Married" 
      DROP-DOWN-LIST
-     SIZE 14 BY 1 NO-UNDO.
+     SIZE 14 BY .88 NO-UNDO.
 
 DEFINE VARIABLE FLN-Address AS CHARACTER FORMAT "X(256)":U 
      LABEL "Address" 
@@ -278,12 +276,12 @@ DEFINE FRAME DEFAULT-FRAME
      "Account Information" VIEW-AS TEXT
           SIZE 23 BY 1 AT ROW 16.75 COL 54 WIDGET-ID 66
           FONT 5
-     "CUSTOMER INFORMATION" VIEW-AS TEXT
-          SIZE-PIXELS 264 BY 56 AT Y 8 X 386 WIDGET-ID 24
-          FONT 9
      "Customer Details" VIEW-AS TEXT
           SIZE 19 BY 1 AT ROW 5.72 COL 56 WIDGET-ID 62
           FONT 5
+     "CUSTOMER INFORMATION" VIEW-AS TEXT
+          SIZE-PIXELS 264 BY 56 AT Y 8 X 386 WIDGET-ID 24
+          FONT 9
      RECT-3 AT ROW 3.5 COL 13 WIDGET-ID 32
      RECT-4 AT ROW 7 COL 12 WIDGET-ID 58
      RECT-5 AT ROW 8.97 COL 100 WIDGET-ID 60
@@ -341,6 +339,24 @@ ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
 /* SETTINGS FOR FRAME DEFAULT-FRAME
    FRAME-NAME                                                           */
 /* BROWSE-TAB BRW-AccountInformation BTN-AddAccount DEFAULT-FRAME */
+/* SETTINGS FOR COMBO-BOX CMB-MaritalStatus IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-Address IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-Address-2 IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-City IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-Country IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-FirstName IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-LastName IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-PostalCode IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
+/* SETTINGS FOR FILL-IN FLN-State IN FRAME DEFAULT-FRAME
+   NO-ENABLE                                                            */
 IF SESSION:DISPLAY-TYPE = "GUI":U AND VALID-HANDLE(C-Win)
 THEN C-Win:HIDDEN = no.
 
@@ -552,11 +568,9 @@ PROCEDURE enable_UI :
           TGL-SelectAll TGL-DeselectAll 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
   ENABLE RECT-3 RECT-4 RECT-5 RECT-6 RECT-7 FLN-CustID BTN-Search 
-         BTN-AdvanceSearch FLN-FirstName FLN-LastName CMB-MaritalStatus BTN-Add 
-         FLN-Address FLN-Address-2 BTN-Update FLN-City FLN-State BTN-Delete 
-         FLN-Country FLN-PostalCode TGL-SelectAll TGL-DeselectAll 
-         BTN-AddAccount BRW-AccountInformation BTN-UpdateAccount 
-         BTN-DeleteAccount 
+         BTN-AdvanceSearch BTN-Add BTN-Update BTN-Delete TGL-SelectAll 
+         TGL-DeselectAll BTN-AddAccount BRW-AccountInformation 
+         BTN-UpdateAccount BTN-DeleteAccount 
       WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
   {&OPEN-BROWSERS-IN-QUERY-DEFAULT-FRAME}
   VIEW C-Win.
