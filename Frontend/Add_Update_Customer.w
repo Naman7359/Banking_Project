@@ -27,7 +27,7 @@ USING Backend.Utiity.*.
 /* Parameters Definitions ---         
                                   */
 DEFINE INPUT PARAMETER piCustomerId AS INTEGER NO-UNDO.
-                                  
+DEFINE INPUT PARAMETER cAction AS CHARACTER NO-UNDO.           
 
 /* Local Variable Definitions ---                                       */
 DEFINE TEMP-TABLE ttCustomerDetails NO-UNDO
@@ -230,51 +230,10 @@ ON WINDOW-CLOSE OF FRAME Dialog-Frame /* <insert dialog title> */
 ON CHOOSE OF BTN-Save IN FRAME Dialog-Frame /* Save */
     DO:
         
-        IF piCustomerId > 0 THEN 
+        IF LC(cAction) = "update" THEN 
             RUN update-customer.
         ELSE 
             RUN create-customer.
-        /* If customer ID exists, UPDATE. Otherwise, CREATE */
-        /*        IF piCustomerId > 0 THEN                                                                            */
-        /*        DO:                                                                                                 */
-        /*            /* UPDATE - Find and overwrite */                                                               */
-        /*            FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = piCustomerId EXCLUSIVE-LOCK NO-ERROR. */
-        /*            IF AVAILABLE CustomerDetails THEN                                                               */
-        /*            DO:                                                                                             */
-        /*                /* Brutally overwrite everything */                                                         */
-        /*                ASSIGN                                                                                      */
-        /*                    CustomerDetails.FirstName     = FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame        */
-        /*                    CustomerDetails.LastName      = FLN-LastName:SCREEN-VALUE IN FRAME Dialog-Frame         */
-        /*                    CustomerDetails.DOB           = DATE(FLN-DateOfBirth:SCREEN-VALUE IN FRAME Dialog-Frame)*/
-        /*                    CustomerDetails.MaritalStatus = CMB-MaritalStatus:SCREEN-VALUE IN FRAME Dialog-Frame    */
-        /*                    CustomerDetails.Address1      = FLN-Address:SCREEN-VALUE IN FRAME Dialog-Frame          */
-        /*                    CustomerDetails.Address2      = FLN-Address_2:SCREEN-VALUE IN FRAME Dialog-Frame        */
-        /*                    CustomerDetails.Country       = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame          */
-        /*                    CustomerDetails.State         = CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame            */
-        /*                    CustomerDetails.City          = CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame             */
-        /*                    CustomerDetails.ZipCode       = FLN-PostalCode:SCREEN-VALUE IN FRAME Dialog-Frame.      */
-        /*                                                                                                            */
-        /*                MESSAGE "Customer updated!" VIEW-AS ALERT-BOX.                                              */
-        /*            END.                                                                                            */
-        /*        END.                                                                                                */
-        /*        ELSE                                                                                                */
-        /*        DO:                                                                                                 */
-        /*            /* CREATE - New customer */                                                                     */
-        /*            CREATE CustomerDetails.                                                                         */
-        /*            ASSIGN                                                                                          */
-        /*                CustomerDetails.FirstName     = FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame            */
-        /*                CustomerDetails.LastName      = FLN-LastName:SCREEN-VALUE IN FRAME Dialog-Frame             */
-        /*                CustomerDetails.DOB           = DATE(FLN-DateOfBirth:SCREEN-VALUE IN FRAME Dialog-Frame)    */
-        /*                CustomerDetails.MaritalStatus = CMB-MaritalStatus:SCREEN-VALUE IN FRAME Dialog-Frame        */
-        /*                CustomerDetails.Address1      = FLN-Address:SCREEN-VALUE IN FRAME Dialog-Frame              */
-        /*                CustomerDetails.Address2      = FLN-Address_2:SCREEN-VALUE IN FRAME Dialog-Frame            */
-        /*                CustomerDetails.Country       = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame              */
-        /*                CustomerDetails.State         = CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame                */
-        /*                CustomerDetails.City          = CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame                 */
-        /*                CustomerDetails.ZipCode       = FLN-Postalcode:SCREEN-VALUE IN FRAME Dialog-Frame.          */
-        /*                                                                                                            */
-        /*            MESSAGE "Customer created!" VIEW-AS ALERT-BOX.                                                  */
-        /*        END.                                                                                                */
     
         APPLY "WINDOW-CLOSE" TO SELF.
     END.
@@ -366,7 +325,7 @@ ON VALUE-CHANGED OF FLN-PostalCode IN FRAME Dialog-Frame /* Postal Code */
 /* ***************************  Main Block  *************************** */
 
 /* Parent the dialog-box to the ACTIVE-WINDOW, if there is no parent.   */
-IF VALID-HANDLE(ACTIVE-WINDOW) AND FRAME {&FRAME-NAME}:PARENT eq ?
+IF VALID-HANDLE(ACTIVE-WINDOW) AND FRAME {&FRAME-NAME}:PARENT EQ ?
     THEN FRAME {&FRAME-NAME}:PARENT = ACTIVE-WINDOW.
 
 
@@ -376,9 +335,28 @@ MAIN-BLOCK:
 DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
     ON END-KEY UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK:
     RUN enable_UI.
+    RUN InitialSetup.
+     
+    WAIT-FOR GO OF FRAME {&FRAME-NAME}.
+END.
+RUN disable_UI.
+
+
+
+
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE InitialSetup Dialog-Frame
+PROCEDURE InitialSetup:
+    /*------------------------------------------------------------------------------
+     Purpose:
+     Notes:
+    ------------------------------------------------------------------------------*/
+    RUN populate-all-countries.
+    RUN populate-all-states.
+    RUN populate-all-cities.
+    RUN populate-marital-status.
     
     /* Load customer data if ID provided */
-    IF piCustomerId > 0 THEN 
+    IF piCustomerId > 0 and lc(cAction  ) = "update" THEN 
     DO:
         FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = piCustomerId NO-LOCK NO-ERROR.
         IF AVAILABLE CustomerDetails THEN 
@@ -398,18 +376,11 @@ DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
             CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame = CustomerDetails.City.
         END.
     END.
-    ELSE 
-    DO:
-        /* New customer - populate combo boxes */
-        RUN populate-all-countries.
-        RUN populate-all-states.
-        RUN populate-all-cities.
-        RUN populate-marital-status.
-        
-    END.
-    WAIT-FOR GO OF FRAME {&FRAME-NAME}.
-END.
-RUN disable_UI.
+
+END PROCEDURE.
+    
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
 
 
 
@@ -750,7 +721,7 @@ PROCEDURE update-customer :
     /* Clear and create temp-table record */
     EMPTY TEMP-TABLE ttCustomerDetails.
     CREATE ttCustomerDetails.
-    
+    MESSAGE "1".
     ASSIGN 
         ttCustomerDetails.CustID         = piCustomerId
         ttCustomerDetails.FirstName      = FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame
@@ -765,10 +736,12 @@ PROCEDURE update-customer :
         ttCustomerDetails.Country        = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame
         ttCustomerDetails.email          = ""
         ttCustomerDetails.mobile_num     = "".
-
+    
+    MESSAGE "2".
     /* Create controller and call update method */
     oCustomer = NEW Backend.Customer().
     lSuccess = oCustomer:UpdateCustomerDetails(INPUT TABLE ttCustomerDetails).
+    MESSAGE lSuccess.
     
     /* Show result */
     IF lSuccess THEN
@@ -782,14 +755,14 @@ PROCEDURE update-customer :
 END PROCEDURE.
 
 PROCEDURE populate-marital-status :
-/*------------------------------------------------------------------------------
-  Purpose:     Populate marital status combo box using Utility.UtilityManager
-  Parameters:  <none>
-  Notes:       Called from main block to load marital status options
-------------------------------------------------------------------------------*/
+    /*------------------------------------------------------------------------------
+      Purpose:     Populate marital status combo box using Utility.UtilityManager
+      Parameters:  <none>
+      Notes:       Called from main block to load marital status options
+    ------------------------------------------------------------------------------*/
     
-    DEFINE VARIABLE oUtility AS UtilityManager NO-UNDO.
-    DEFINE VARIABLE cMaritalStatusList AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE oUtility           AS UtilityManager NO-UNDO.
+    DEFINE VARIABLE cMaritalStatusList AS CHARACTER      NO-UNDO.
     
     /* Clear the combo box first */
     CMB-MaritalStatus:LIST-ITEMS IN FRAME Dialog-Frame = "".

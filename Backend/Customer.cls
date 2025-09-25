@@ -8,7 +8,6 @@ USING Progress.Lang.*.
 USING Progress.Json.ObjectModel.*.
 
 CLASS Backend.Customer:
-    DEFINE PRIVATE VARIABLE iLastCustomerDetailsId AS INTEGER NO-UNDO.
     
     
     DEFINE PRIVATE TEMP-TABLE ttCustomerDetails NO-UNDO
@@ -29,24 +28,9 @@ CLASS Backend.Customer:
     
     CONSTRUCTOR PUBLIC Customer():
         SUPER().
-        
-        /* Initialize last CustomerDetails ID */
-        FIND LAST CustomerDetails NO-LOCK NO-ERROR.
-        IF AVAILABLE CustomerDetails THEN
-            iLastCustomerDetailsId = CustomerDetails.CustID.
-        ELSE
-            iLastCustomerDetailsId = 0.
+
     END CONSTRUCTOR.
     
-    DESTRUCTOR PUBLIC Customer():
-        EMPTY TEMP-TABLE ttCustomerDetails.
-    END DESTRUCTOR.
-    
-    
-    METHOD PUBLIC INTEGER GetNextCustomerDetailsId():
-        iLastCustomerDetailsId = iLastCustomerDetailsId + 1.
-        RETURN iLastCustomerDetailsId.
-    END METHOD.
     
     METHOD PUBLIC LOGICAL GetCustomerDetails(INPUT piCustId AS INTEGER,
         OUTPUT TABLE ttCustomerDetails):
@@ -91,7 +75,7 @@ CLASS Backend.Customer:
             FOR EACH ttCustomerDetails:
                 CREATE CustomerDetails.
                 ASSIGN 
-                    CustomerDetails.CustID        = THIS-OBJECT:GetNextCustomerDetailsId()
+                    CustomerDetails.CustID        = NEXT-VALUE(AccountIDSeq)
                     CustomerDetails.FirstName     = ttCustomerDetails.FirstName
                     CustomerDetails.LastName      = ttCustomerDetails.LastName
                     CustomerDetails.DOB           = ttCustomerDetails.date_of_birth
@@ -120,31 +104,59 @@ CLASS Backend.Customer:
     
     METHOD PUBLIC LOGICAL UpdateCustomerDetails(INPUT TABLE ttCustomerDetails):
         DEFINE VARIABLE lSuccess AS LOGICAL NO-UNDO INITIAL FALSE.
-        
-        DO TRANSACTION ON ERROR UNDO,THROW:
-            FOR EACH ttCustomerDetails:
-                FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = ttCustomerDetails.CustID EXCLUSIVE-LOCK NO-ERROR.
-                IF AVAILABLE CustomerDetails THEN 
-                DO:
-                    ASSIGN 
-                        CustomerDetails.FirstName     = ttCustomerDetails.FirstName
-                        CustomerDetails.LastName      = ttCustomerDetails.LastName
-                        CustomerDetails.DOB           = ttCustomerDetails.date_of_birth
-                        CustomerDetails.MaritalStatus = ttCustomerDetails.marital_status
-                        CustomerDetails.Address1      = ttCustomerDetails.address
-                        CustomerDetails.Address2      = ttCustomerDetails.address_2
-                        CustomerDetails.City          = ttCustomerDetails.City
-                        CustomerDetails.State         = ttCustomerDetails.State
-                        CustomerDetails.ZipCode       = ttCustomerDetails.postal_code
-                        CustomerDetails.Country       = ttCustomerDetails.Country
-                        CustomerDetails.EmailId       = ttCustomerDetails.email
-                        CustomerDetails.Phone         = ttCustomerDetails.mobile_num
-                        lSuccess                      = TRUE.
+        DO ON ERROR UNDO, THROW:
+            
+            FIND FIRST ttCustomerDetails NO-LOCK NO-ERROR.
+            IF AVAILABLE ttCustomerDetails THEN 
+            DO:
+                                    
+                DO TRANSACTION ON ERROR UNDO,THROW:
+                    FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = ttCustomerDetails.CustID EXCLUSIVE-LOCK NO-ERROR.
+                    IF AVAILABLE CustomerDetails THEN 
+              
+                    DO:
+                        MESSAGE "in transaction".
+                        ASSIGN 
+                            CustomerDetails.FirstName     = ttCustomerDetails.FirstName
+                            CustomerDetails.LastName      = ttCustomerDetails.LastName
+                            CustomerDetails.DOB           = ttCustomerDetails.date_of_birth
+                            CustomerDetails.MaritalStatus = ttCustomerDetails.marital_status
+                            CustomerDetails.Address1      = ttCustomerDetails.address
+                            CustomerDetails.Address2      = ttCustomerDetails.address_2
+                            CustomerDetails.City          = ttCustomerDetails.City
+                            CustomerDetails.State         = ttCustomerDetails.State
+                            CustomerDetails.ZipCode       = ttCustomerDetails.postal_code
+                            CustomerDetails.Country       = ttCustomerDetails.Country
+                            CustomerDetails.EmailId       = ttCustomerDetails.email
+                            CustomerDetails.Phone         = ttCustomerDetails.mobile_num
+                            lSuccess                      = TRUE.
+                            
+                            
+                        MESSAGE "UPDATE SUCCESSFUL!" SKIP(2)
+                            "Updated Customer Details:" SKIP
+                            "================================" SKIP
+                            "Customer ID:" CustomerDetails.CustID SKIP
+                            "Name:" CustomerDetails.FirstName CustomerDetails.LastName SKIP
+                            "Date of Birth:" CustomerDetails.DOB SKIP
+                            "Marital Status:" CustomerDetails.MaritalStatus SKIP
+                            "Address:" CustomerDetails.Address1 SKIP
+                            "Address 2:" CustomerDetails.Address2 SKIP
+                            "City:" CustomerDetails.City SKIP
+                            "State:" CustomerDetails.State SKIP
+                            "Postal Code:" CustomerDetails.ZipCode SKIP
+                            "Country:" CustomerDetails.Country SKIP
+                            "Email:" CustomerDetails.EmailId SKIP
+                            "Phone:" CustomerDetails.Phone
+                            VIEW-AS ALERT-BOX INFO BUTTONS OK.
+                    END.
                 END.
             END.
-        END.
         
-        RETURN lSuccess.
+            RETURN lSuccess.
+        END.
+        CATCH e AS Progress.Lang.Error :
+            MESSAGE e:GetMessage(1).
+        END CATCH.
     END METHOD.
     
     
@@ -394,11 +406,11 @@ CLASS Backend.Customer:
 
     METHOD PUBLIC LONGCHAR getCustomerWithAccounts(INPUT iCustID AS INTEGER):
 
-        DEFINE VARIABLE oResponse    AS JsonObject  NO-UNDO.
-        DEFINE VARIABLE oAccounts    AS JsonArray   NO-UNDO.
-        DEFINE VARIABLE oAccount     AS JsonObject  NO-UNDO.
-        DEFINE VARIABLE lcData       AS LONGCHAR    NO-UNDO.
-        DEFINE VARIABLE lcResult     AS LONGCHAR    NO-UNDO.
+        DEFINE VARIABLE oResponse AS JsonObject NO-UNDO.
+        DEFINE VARIABLE oAccounts AS JsonArray  NO-UNDO.
+        DEFINE VARIABLE oAccount  AS JsonObject NO-UNDO.
+        DEFINE VARIABLE lcData    AS LONGCHAR   NO-UNDO.
+        DEFINE VARIABLE lcResult  AS LONGCHAR   NO-UNDO.
 
         DO ON ERROR UNDO, LEAVE:
 
@@ -426,28 +438,37 @@ CLASS Backend.Customer:
                 oResponse:Add("MaritalStatus", CustomerDetails.MaritalStatus).
 
                 /* Collect related accounts */
+                /* Always initialize accounts array */
+                oAccounts = NEW JsonArray().
+
+                /* Collect related accounts */
                 FOR EACH CustomerAccounts 
                     WHERE CustomerAccounts.CustID = CustomerDetails.CustID NO-LOCK:
+
+                    oAccount = NEW JsonObject().
 
                     /* Lookup account type and subtype */
                     FIND FIRST AccountType 
                         WHERE AccountType.AccountTypeID = CustomerAccounts.AccountTypeId NO-LOCK NO-ERROR.
 
-
                     IF AVAILABLE AccountType THEN 
                     DO:
-                    oAccount = NEW JsonObject().
-                    oAccount:Add("AcctNum", CustomerAccounts.AcctNum).
-                    oAccount:Add("AccountTypeId", CustomerAccounts.AccountTypeId).
+                        oAccount:Add("AcctNum", CustomerAccounts.AcctNum).
+                        oAccount:Add("AccountTypeId", CustomerAccounts.AccountTypeId).
                         oAccount:Add("AccountType", AccountType.AccountType).
-                        oAccount:Add("AccountSubType", AccountType.AccSubType).  /* if SubType exists */
+                        oAccount:Add("AccountSubType", AccountType.AccSubType).
                     END.
-
+                    ELSE 
+                    DO:
+                        /* fallback if account type not found */
+                        oAccount:Add("AcctNum", CustomerAccounts.AcctNum).
+                        oAccount:Add("AccountTypeId", CustomerAccounts.AccountTypeId).
+                    END.
 
                     oAccounts:Add(oAccount).
                 END.
 
-                /* Attach accounts array */
+                /* Attach accounts array � even if empty */
                 oResponse:Add("Accounts", oAccounts).
 
                 /* Serialize the core data (customer + accounts) */
@@ -477,6 +498,12 @@ CLASS Backend.Customer:
 
     END METHOD.
 
+
+
+
+    DESTRUCTOR PUBLIC Customer():
+        EMPTY TEMP-TABLE ttCustomerDetails.
+    END DESTRUCTOR.
 
 
 END CLASS.

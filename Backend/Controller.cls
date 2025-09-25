@@ -19,20 +19,20 @@ CLASS Backend.Controller:
 
         oResponse = NEW JsonArray().
 
-        FOR EACH CustomerDetails NO-LOCK
-            WHERE (cFirstName = "" OR CustomerDetails.FirstName BEGINS cFirstName)
-            AND (cLastName  = "" OR CustomerDetails.LastName  BEGINS cLastName)
-            AND (CustID = "" OR CustomerDetails.CustID BEGINS CustID).
-
-            oCust = NEW JsonObject().
-            oCust:Add("CustID",    CustomerDetails.CustID).
-            oCust:Add("FirstName", CustomerDetails.FirstName).
-            oCust:Add("LastName",  CustomerDetails.LastName).
-            oCust:Add("Phone",     CustomerDetails.Phone).
-            oCust:Add("Email",     CustomerDetails.Email).
-
-            oResponse:Add(oCust).
-        END.
+/*        FOR EACH CustomerDetails NO-LOCK                                          */
+/*            WHERE (cFirstName = "" OR CustomerDetails.FirstName BEGINS cFirstName)*/
+/*            AND (cLastName  = "" OR CustomerDetails.LastName  BEGINS cLastName)   */
+/*            AND (CustID = "" OR CustomerDetails.CustID BEGINS CustID).            */
+/*                                                                                  */
+/*            oCust = NEW JsonObject().                                             */
+/*            oCust:Add("CustID",    CustomerDetails.CustID).                       */
+/*            oCust:Add("FirstName", CustomerDetails.FirstName).                    */
+/*            oCust:Add("LastName",  CustomerDetails.LastName).                     */
+/*            oCust:Add("Phone",     CustomerDetails.Phone).                        */
+/*            oCust:Add("Email",     CustomerDetails.Email).                        */
+/*                                                                                  */
+/*            oResponse:Add(oCust).                                                 */
+/*        END.                                                                      */
 
         /* Serialize JSON array to string */
         oResponse:Write(lcResult).

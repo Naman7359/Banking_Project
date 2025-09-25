@@ -284,7 +284,7 @@ END PROCEDURE.
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE DoCustomerSearch Dialog-Frame
 PROCEDURE DoCustomerSearch:
-    DEFINE VARIABLE oSearch   AS Backend.Customer_Filler_Search NO-UNDO.
+    DEFINE VARIABLE oSearch   AS Backend.Customer NO-UNDO.
     DEFINE VARIABLE lcResult  AS LONGCHAR NO-UNDO.
     DEFINE VARIABLE oParser   AS ObjectModelParser NO-UNDO.
     DEFINE VARIABLE oArray    AS JsonArray NO-UNDO.
@@ -307,7 +307,7 @@ PROCEDURE DoCustomerSearch:
         cEmail     = FLN-Email:SCREEN-VALUE IN FRAME Dialog-Frame.
 
     /* Call backend search class */
-    oSearch  = NEW Backend.Customer_Filler_Search().
+    oSearch  = NEW Backend.Customer().
     lcResult = oSearch:searchCustomers(
                     INPUT cFirstName,
                     INPUT cLastName,
