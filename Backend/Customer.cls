@@ -38,9 +38,7 @@ CLASS Backend.Customer:
             iLastCustomerDetailsId = 0.
     END CONSTRUCTOR.
     
-    DESTRUCTOR PUBLIC Customer():
-        EMPTY TEMP-TABLE ttCustomerDetails.
-    END DESTRUCTOR.
+  
     
     
     METHOD PUBLIC INTEGER GetNextCustomerDetailsId():
@@ -394,11 +392,11 @@ CLASS Backend.Customer:
 
     METHOD PUBLIC LONGCHAR getCustomerWithAccounts(INPUT iCustID AS INTEGER):
 
-        DEFINE VARIABLE oResponse    AS JsonObject  NO-UNDO.
-        DEFINE VARIABLE oAccounts    AS JsonArray   NO-UNDO.
-        DEFINE VARIABLE oAccount     AS JsonObject  NO-UNDO.
-        DEFINE VARIABLE lcData       AS LONGCHAR    NO-UNDO.
-        DEFINE VARIABLE lcResult     AS LONGCHAR    NO-UNDO.
+        DEFINE VARIABLE oResponse AS JsonObject NO-UNDO.
+        DEFINE VARIABLE oAccounts AS JsonArray  NO-UNDO.
+        DEFINE VARIABLE oAccount  AS JsonObject NO-UNDO.
+        DEFINE VARIABLE lcData    AS LONGCHAR   NO-UNDO.
+        DEFINE VARIABLE lcResult  AS LONGCHAR   NO-UNDO.
 
         DO ON ERROR UNDO, LEAVE:
 
@@ -426,28 +424,37 @@ CLASS Backend.Customer:
                 oResponse:Add("MaritalStatus", CustomerDetails.MaritalStatus).
 
                 /* Collect related accounts */
+                /* Always initialize accounts array */
+                oAccounts = NEW JsonArray().
+
+                /* Collect related accounts */
                 FOR EACH CustomerAccounts 
                     WHERE CustomerAccounts.CustID = CustomerDetails.CustID NO-LOCK:
+
+                    oAccount = NEW JsonObject().
 
                     /* Lookup account type and subtype */
                     FIND FIRST AccountType 
                         WHERE AccountType.AccountTypeID = CustomerAccounts.AccountTypeId NO-LOCK NO-ERROR.
 
-
                     IF AVAILABLE AccountType THEN 
                     DO:
-                    oAccount = NEW JsonObject().
-                    oAccount:Add("AcctNum", CustomerAccounts.AcctNum).
-                    oAccount:Add("AccountTypeId", CustomerAccounts.AccountTypeId).
+                        oAccount:Add("AcctNum", CustomerAccounts.AcctNum).
+                        oAccount:Add("AccountTypeId", CustomerAccounts.AccountTypeId).
                         oAccount:Add("AccountType", AccountType.AccountType).
-                        oAccount:Add("AccountSubType", AccountType.AccSubType).  /* if SubType exists */
+                        oAccount:Add("AccountSubType", AccountType.AccSubType).
                     END.
-
+                    ELSE 
+                    DO:
+                        /* fallback if account type not found */
+                        oAccount:Add("AcctNum", CustomerAccounts.AcctNum).
+                        oAccount:Add("AccountTypeId", CustomerAccounts.AccountTypeId).
+                    END.
 
                     oAccounts:Add(oAccount).
                 END.
 
-                /* Attach accounts array */
+                /* Attach accounts array � even if empty */
                 oResponse:Add("Accounts", oAccounts).
 
                 /* Serialize the core data (customer + accounts) */
@@ -478,8 +485,9 @@ CLASS Backend.Customer:
     END METHOD.
 
 
-    DESTRUCTOR PUBLIC Customer ( ):
-
+    DESTRUCTOR PUBLIC Customer():
+        EMPTY TEMP-TABLE ttCustomerDetails.
     END DESTRUCTOR.
+
 
 END CLASS.

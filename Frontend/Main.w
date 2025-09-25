@@ -30,6 +30,7 @@
      will execute in this procedure's storage, and that proper
      cleanup will occur on deletion of the procedure. */
 
+USING Progress.Json.ObjectModel.*.
 CREATE WIDGET-POOL.
 /* ***************************  Definitions  ************************** */
 
@@ -52,15 +53,11 @@ DEFINE TEMP-TABLE ttCustomer NO-UNDO
     INDEX pkCustID IS PRIMARY UNIQUE CustID.
     
     
-DEFINE TEMP-TABLE ttAccount NO-UNDO
-    FIELD AccountID   AS INTEGER
-    FIELD CustID      AS INTEGER
-    FIELD AccountType AS CHARACTER  /* Saving / Loan */
-    FIELD Balance     AS DECIMAL
-    FIELD CreatedDate AS DATE
-    FIELD cStatus     AS CHARACTER  /* Active / Closed */
-    INDEX pkAccountID IS PRIMARY UNIQUE AccountID
-    INDEX ixCustID                      CustID.
+DEFINE TEMP-TABLE ttAccount NO-UNDO 
+    FIELD AcctNum        AS INTEGER 
+    FIELD AccountTypeId  AS INTEGER 
+    FIELD AccountType    AS CHARACTER 
+    FIELD AccountSubType AS CHARACTER. 
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
@@ -78,16 +75,16 @@ DEFINE TEMP-TABLE ttAccount NO-UNDO
 &Scoped-define BROWSE-NAME BRW-AccountInformation
 
 /* Internal Tables (found by Frame, Query & Browse Queries)             */
-&Scoped-define INTERNAL-TABLES ttCustomer
+&Scoped-define INTERNAL-TABLES ttAccount
 
 /* Definitions for BROWSE BRW-AccountInformation                        */
 &Scoped-define FIELDS-IN-QUERY-BRW-AccountInformation   
 &Scoped-define ENABLED-FIELDS-IN-QUERY-BRW-AccountInformation   
 &Scoped-define SELF-NAME BRW-AccountInformation
-&Scoped-define QUERY-STRING-BRW-AccountInformation FOR EACH ttCustomer
-&Scoped-define OPEN-QUERY-BRW-AccountInformation OPEN QUERY {&SELF-NAME} FOR EACH ttCustomer.
-&Scoped-define TABLES-IN-QUERY-BRW-AccountInformation ttCustomer
-&Scoped-define FIRST-TABLE-IN-QUERY-BRW-AccountInformation ttCustomer
+&Scoped-define QUERY-STRING-BRW-AccountInformation FOR EACH ttAccount
+&Scoped-define OPEN-QUERY-BRW-AccountInformation OPEN QUERY {&SELF-NAME} FOR EACH ttAccount.
+&Scoped-define TABLES-IN-QUERY-BRW-AccountInformation ttAccount
+&Scoped-define FIRST-TABLE-IN-QUERY-BRW-AccountInformation ttAccount
 
 
 /* Definitions for FRAME DEFAULT-FRAME                                  */
@@ -234,14 +231,14 @@ DEFINE VARIABLE TGL-SelectAll   AS LOGICAL INITIAL no
 /* Query definitions                                                    */
 &ANALYZE-SUSPEND
 DEFINE QUERY BRW-AccountInformation FOR 
-    ttCustomer SCROLLING.
+    ttAccount SCROLLING.
 &ANALYZE-RESUME
 
 /* Browse definitions                                                   */
 DEFINE BROWSE BRW-AccountInformation
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS BRW-AccountInformation C-Win _FREEFORM
     QUERY BRW-AccountInformation DISPLAY
-      
+    ttAccount
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
     WITH NO-ROW-MARKERS SEPARATORS SIZE 74 BY 3.76 FIT-LAST-COLUMN.
@@ -274,12 +271,12 @@ DEFINE FRAME DEFAULT-FRAME
     "Account Information" VIEW-AS TEXT
     SIZE 23 BY 1 AT ROW 16.76 COL 54 WIDGET-ID 66
     FONT 5
-    "Customer Details" VIEW-AS TEXT
-    SIZE 19 BY 1 AT ROW 5.71 COL 56 WIDGET-ID 62
-    FONT 5
     "CUSTOMER INFORMATION" VIEW-AS TEXT
     SIZE-PIXELS 264 BY 56 AT Y 8 X 382 WIDGET-ID 24
     FONT 1
+    "Customer Details" VIEW-AS TEXT
+    SIZE 19 BY 1 AT ROW 5.71 COL 56 WIDGET-ID 62
+    FONT 5
     RECT-3 AT ROW 3.52 COL 13 WIDGET-ID 32
     RECT-4 AT ROW 7.24 COL 13 WIDGET-ID 58
     RECT-5 AT ROW 8.95 COL 100 WIDGET-ID 60
@@ -367,7 +364,7 @@ IF SESSION:DISPLAY-TYPE = "GUI":U AND VALID-HANDLE(C-Win)
 &ANALYZE-SUSPEND _QUERY-BLOCK BROWSE BRW-AccountInformation
 /* Query rebuild information for BROWSE BRW-AccountInformation
      _START_FREEFORM
-OPEN QUERY {&SELF-NAME} FOR EACH ttCustomer.
+OPEN QUERY {&SELF-NAME} FOR EACH ttAccount.
      _END_FREEFORM
      _Query            is OPENED
 */  /* BROWSE BRW-AccountInformation */
@@ -410,11 +407,12 @@ ON WINDOW-CLOSE OF C-Win /* <insert window title> */
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Add C-Win
 ON CHOOSE OF BTN-Add IN FRAME DEFAULT-FRAME /* Add */
     DO:
+        RUN Add_Update_Customer.w (INPUT 0, INPUT "Add").
+    END.
 
-        RUN Frontend/Add+Update_Customer.w (INPUT 0).
-        END.
-    /* _UIB-CODE-BLOCK-END */
+/* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
+
 
 &Scoped-define SELF-NAME BTN-AddAccount
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-AddAccount C-Win
@@ -511,15 +509,7 @@ ON CHOOSE OF BTN-Delete IN FRAME DEFAULT-FRAME /* Delete */
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Search C-Win
 ON CHOOSE OF BTN-Search IN FRAME DEFAULT-FRAME /* Search */
     DO:
-        DEFINE VARIABLE oCustomer AS Backend.Customer NO-UNDO.
-        DEFINE VARIABLE lcRes     AS LONGCHAR         NO-UNDO.
-        DEFINE VARIABLE lcData    AS LONGCHAR         NO-UNDO.
-
-        oCustomer    = NEW Backend.Customer().
-        
-        lcRes = oCustomer:getCustomerWithAccounts( INPUT INTEGER(FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME)).
-        lcData = Frontend.Utility.Utility:ReadResponse(lcRes).
-        MESSAGE STRING(lcData) .
+        RUN Search_Customer.
     END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -530,12 +520,11 @@ ON CHOOSE OF BTN-Search IN FRAME DEFAULT-FRAME /* Search */
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Update C-Win
 ON CHOOSE OF BTN-Update IN FRAME DEFAULT-FRAME /* Update */
     DO:
-        RUN Frontend/Add+Update_Customer.w (INPUT 0).
+        RUN Add_Update_Customer.w (INPUT 0, INPUT "Update").
     END.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
-
 
 
 &Scoped-define BROWSE-NAME BRW-AccountInformation
@@ -610,7 +599,6 @@ PROCEDURE DeleteCustomerById:
 
 END PROCEDURE.
 
-
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
@@ -652,14 +640,144 @@ PROCEDURE enable_UI :
         TGL-SelectAll TGL-DeselectAll 
         WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
     ENABLE RECT-3 RECT-4 RECT-5 RECT-6 RECT-7 FLN-CustID BTN-Search 
-        BTN-AdvanceSearch FLN-FirstName FLN-LastName CMB-MaritalStatus BTN-Add 
-        FLN-Address FLN-Address-2 BTN-Update FLN-City FLN-State BTN-Delete 
-        FLN-Country FLN-PostalCode TGL-SelectAll TGL-DeselectAll 
-        BTN-AddAccount BRW-AccountInformation BTN-UpdateAccount 
-        BTN-DeleteAccount 
+        BTN-AdvanceSearch BTN-Add BTN-Update BTN-Delete TGL-SelectAll 
+        TGL-DeselectAll BTN-AddAccount BRW-AccountInformation 
+        BTN-UpdateAccount BTN-DeleteAccount 
         WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
     {&OPEN-BROWSERS-IN-QUERY-DEFAULT-FRAME}
     VIEW C-Win.
+END PROCEDURE.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE FillCustomerData C-Win 
+PROCEDURE FillCustomerData :
+    /*------------------------------------------------------------------------------
+         Purpose:
+         Notes:
+        ------------------------------------------------------------------------------*/
+    DEFINE INPUT PARAMETER lcInputData AS LONGCHAR NO-UNDO.
+    DEFINE VARIABLE oParser     AS ObjectModelParser NO-UNDO.
+    DEFINE VARIABLE oJson       AS JsonObject        NO-UNDO.
+    DEFINE VARIABLE oAcctsArray AS JsonArray         NO-UNDO.
+    DEFINE VARIABLE i           AS INTEGER           NO-UNDO.
+    DEFINE VARIABLE oAccount    AS JsonObject        NO-UNDO.
+
+    DO ON ERROR UNDO, THROW :
+        
+        /* 1. Parse the Input Data (Customer Details and Accounts) */
+        oParser = NEW ObjectModelParser().
+        oJson = CAST(oParser:Parse(lcInputData), JsonObject) NO-ERROR.
+        
+        IF ERROR-STATUS:NUM-MESSAGES > 0 OR NOT VALID-OBJECT(oJson) THEN
+        DO:
+            UNDO, THROW NEW Progress.Lang.AppError("Failed to parse customer data response into JSON object.", 0).
+        END.
+        
+        /* 2. Populate Customer Fill-in Widgets (Customer Details) */
+        Assign
+            FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME      = STRING(oJson:GetInteger("CustID")) 
+            FLN-FirstName:SCREEN-VALUE                          = oJson:GetCharacter("FirstName") 
+            FLN-LastName:SCREEN-VALUE                           = oJson:GetCharacter("LastName") 
+            FLN-Address:SCREEN-VALUE                            = oJson:GetCharacter("Address") 
+            FLN-Address-2:SCREEN-VALUE                          = oJson:GetCharacter("Address2")
+            FLN-City:SCREEN-VALUE                               = oJson:GetCharacter("City") 
+            FLN-State:SCREEN-VALUE                              = oJson:GetCharacter("State") 
+            FLN-Country:SCREEN-VALUE                            = oJson:GetCharacter("Country") 
+            FLN-PostalCode:SCREEN-VALUE                         = STRING(oJson:GetInteger("PostalCode")) 
+            CMB-MaritalStatus:LIST-ITEMS in FRAME DEFAULT-FRAME = oJson:GetCharacter("MaritalStatus")
+            CMB-MaritalStatus:SCREEN-VALUE                      = oJson:GetCharacter("MaritalStatus") .
+
+        /* 3. Load Accounts into Temp-Table (ttAccount) */
+        
+        /* Clear previous data */
+        EMPTY TEMP-TABLE ttAccount.
+        QUERY BRW-AccountInformation:QUERY-CLOSE ().
+        /* Get the Accounts array */
+        oAcctsArray = CAST(oJson:GetJsonArray("Accounts"), JsonArray) NO-ERROR.
+/*        MESSAGE STRING (oAcctsArray) .*/
+
+        /* Iterate through the array and create records in ttAccount */
+        IF oAcctsArray:Length > 0 THEN 
+        DO:
+            DO i = 1 TO oAcctsArray:Length:
+                oAccount = CAST(oAcctsArray:GetJsonObject(i), JsonObject).
+
+                CREATE ttAccount.
+                ASSIGN
+                    ttAccount.AcctNum       = oAccount:GetInteger("AcctNum")
+                    ttAccount.AccountTypeId = oAccount:GetInteger("AccountTypeId")
+                    ttAccount.AccountType   = oAccount:GetCharacter("AccountType") NO-ERROR.
+                ttAccount.AccountSubType = oAccount:GetCharacter("AccountSubType") NO-ERROR.
+
+                DELETE OBJECT oAccount NO-ERROR. /* Cleanup object inside loop */
+            END.
+            
+            QUERY BRW-AccountInformation:QUERY-PREPARE("FOR EACH ttAccount NO-LOCK").
+            QUERY BRW-AccountInformation:QUERY-OPEN().
+            
+        END.
+        ElSE 
+        DO :
+            MESSAGE "No Accounts Available." VIEW-AS ALERT-BOX INFORMATION.
+        END.
+        
+    END.
+    
+    CATCH e AS Progress.Lang.Error:
+        MESSAGE "Error populating customer data: " + e:GetMessage(1) SKIP 
+            "Stack: " + e:CallStack
+            VIEW-AS ALERT-BOX ERROR TITLE "Data Loading Failure".
+    END CATCH.
+
+    FINALLY:
+        DELETE OBJECT oJson NO-ERROR.
+        DELETE OBJECT oParser NO-ERROR.
+            
+    END FINALLY.
+
+END PROCEDURE.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE Search_Customer C-Win 
+PROCEDURE Search_Customer :
+    /*------------------------------------------------------------------------------
+         Purpose:
+         Notes:
+        ------------------------------------------------------------------------------*/
+
+    DEFINE VARIABLE oCustomer AS Backend.Customer NO-UNDO.
+    DEFINE VARIABLE lcRes     AS LONGCHAR         NO-UNDO.
+    DEFINE VARIABLE lcData    AS LONGCHAR         NO-UNDO.
+    DO ON ERROR UNDO, THROW :
+        If(
+            FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME <> "0" AND 
+            FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME <> "" AND 
+            FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME <> ?
+            ) THEN 
+        DO:
+            
+            oCustomer    = NEW Backend.Customer().
+            lcRes = oCustomer:getCustomerWithAccounts( INPUT INTEGER(FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME)).
+            lcData = Frontend.Utility.Utility:ReadResponse(lcRes).
+            RUN FillCustomerData ( INPUT lcData).
+/*            MESSAGE STRING(lcData).*/
+        end. 
+        ELSE 
+        DO:
+            MESSAGE "Enter Customer ID " VIEW-AS ALERT-BOX INFORMATION.
+        END.
+    END. 
+    CATCH e AS Progress.Lang.Error:
+        Message "Error while Search Customer: " + e:GetMessage(1) View-as ALERT-BOX ERROR.
+    END CATCH.  
+    FINALLY:
+        DELETE OBJECT oCustomer NO-ERROR. 
+    END FINALLY.
+
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */

@@ -27,7 +27,7 @@ USING Backend.Utiity.*.
 /* Parameters Definitions ---         
                                   */
 DEFINE INPUT PARAMETER piCustomerId AS INTEGER NO-UNDO.
-                                  
+DEFINE INPUT PARAMETER cAction AS CHARACTER NO-UNDO.           
 
 /* Local Variable Definitions ---                                       */
 DEFINE TEMP-TABLE ttCustomerDetails NO-UNDO
@@ -366,7 +366,7 @@ ON VALUE-CHANGED OF FLN-PostalCode IN FRAME Dialog-Frame /* Postal Code */
 /* ***************************  Main Block  *************************** */
 
 /* Parent the dialog-box to the ACTIVE-WINDOW, if there is no parent.   */
-IF VALID-HANDLE(ACTIVE-WINDOW) AND FRAME {&FRAME-NAME}:PARENT eq ?
+IF VALID-HANDLE(ACTIVE-WINDOW) AND FRAME {&FRAME-NAME}:PARENT EQ ?
     THEN FRAME {&FRAME-NAME}:PARENT = ACTIVE-WINDOW.
 
 
@@ -378,7 +378,7 @@ DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
     RUN enable_UI.
     
     /* Load customer data if ID provided */
-    IF piCustomerId > 0 THEN 
+    IF piCustomerId > 0 and lc(cAction  ) = "update" THEN 
     DO:
         FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = piCustomerId NO-LOCK NO-ERROR.
         IF AVAILABLE CustomerDetails THEN 
@@ -782,14 +782,14 @@ PROCEDURE update-customer :
 END PROCEDURE.
 
 PROCEDURE populate-marital-status :
-/*------------------------------------------------------------------------------
-  Purpose:     Populate marital status combo box using Utility.UtilityManager
-  Parameters:  <none>
-  Notes:       Called from main block to load marital status options
-------------------------------------------------------------------------------*/
+    /*------------------------------------------------------------------------------
+      Purpose:     Populate marital status combo box using Utility.UtilityManager
+      Parameters:  <none>
+      Notes:       Called from main block to load marital status options
+    ------------------------------------------------------------------------------*/
     
-    DEFINE VARIABLE oUtility AS UtilityManager NO-UNDO.
-    DEFINE VARIABLE cMaritalStatusList AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE oUtility           AS UtilityManager NO-UNDO.
+    DEFINE VARIABLE cMaritalStatusList AS CHARACTER      NO-UNDO.
     
     /* Clear the combo box first */
     CMB-MaritalStatus:LIST-ITEMS IN FRAME Dialog-Frame = "".
