@@ -176,7 +176,7 @@ DEFINE VARIABLE FLN-Country       AS CHARACTER FORMAT "X(256)":U
     VIEW-AS FILL-IN 
     SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-CustID        AS CHARACTER FORMAT "X(256)":U 
+DEFINE VARIABLE FLN-CustID        AS INTEGER   FORMAT "->,>>>,>>9":U INITIAL 0 
     LABEL "Customer ID" 
     VIEW-AS FILL-IN 
     SIZE 30 BY 1 NO-UNDO.
@@ -412,20 +412,38 @@ ON CHOOSE OF BTN-Add IN FRAME DEFAULT-FRAME /* Add */
     DO:
 
         RUN Frontend/Add+Update_Customer.w (INPUT 0).
-    
+        END.
+    /* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+&Scoped-define SELF-NAME BTN-AddAccount
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-AddAccount C-Win
+ON CHOOSE OF BTN-AddAccount IN FRAME DEFAULT-FRAME /* Add Account */
+    DO:
+        DEFINE VARIABLE iCustID    AS INTEGER NO-UNDO.
+        DEFINE VARIABLE iAccountID AS INTEGER NO-UNDO.
+
+        /* Get selected customer */
+        iCustID = INTEGER(FLN-CustID:SCREEN-VALUE).
+
+        IF iCustID = 0 THEN 
+        DO:
+            MESSAGE "Please select a customer before adding account." VIEW-AS ALERT-BOX ERROR.
+            RETURN.
+        END.
+
+        /* Run dialog */
+        RUN Add_Account.w(
+            INPUT iCustID,        /* customer ID */
+            OUTPUT iAccountID     /* newly created account ID */
+            ).
+
+        /* Refresh Accounts browse if an account was created */
+        IF iAccountID > 0 THEN 
+        DO:
+            BROWSE BRW-AccountInformation:REFRESH().
+        END.  
     END.
-
-    /* Run dialog */
-    RUN Add_Account.w(
-        INPUT iCustID,        /* customer ID */
-        OUTPUT iAccountID     /* newly created account ID */
-    ).
-
-    /* Refresh Accounts browse if an account was created */
-    IF iAccountID > 0 THEN DO:
-        BROWSE BRW-AccountInformation:REFRESH().
-    END.  
-END.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
@@ -493,32 +511,15 @@ ON CHOOSE OF BTN-Delete IN FRAME DEFAULT-FRAME /* Delete */
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Search C-Win
 ON CHOOSE OF BTN-Search IN FRAME DEFAULT-FRAME /* Search */
     DO:
-        EMPTY TEMP-TABLE ttCustomer.
-        EMPTY TEMP-TABLE ttAccount.
+        DEFINE VARIABLE oCustomer AS Backend.Customer NO-UNDO.
+        DEFINE VARIABLE lcRes     AS LONGCHAR         NO-UNDO.
+        DEFINE VARIABLE lcData    AS LONGCHAR         NO-UNDO.
 
-        /* Lookup customer by CustID */
-        IF AVAILABLE ttCustomer THEN 
-        DO:
-            /* Populate UI fields */
-            FLN-FirstName:SCREEN-VALUE       = ttCustomer.FirstName.
-            FLN-LastName:SCREEN-VALUE        = ttCustomer.LastName.
-            FLN-Address-2:SCREEN-VALUE       = ttCustomer.Address2.   /* <─ New */
-            FLN-Address:SCREEN-VALUE         = ttCustomer.Address.
-            FLN-City:SCREEN-VALUE            = ttCustomer.City.
-            FLN-State:SCREEN-VALUE           = ttCustomer.State.
-            FLN-Country:SCREEN-VALUE         = ttCustomer.Country.
-            FLN-PostalCode:SCREEN-VALUE      = ttCustomer.PostalCode.
-            CMB-MaritalStatus:SCREEN-VALUE   = ttCustomer.MaritalStatus.
-
-            /* Load accounts */
-            RUN Load_Accounts.p (INPUT ttCustomer.CustID, OUTPUT TABLE ttAccount).
-
-            BROWSE BRW-AccountInformation:REFRESH().
-        END.
-        ELSE 
-        DO:
-            MESSAGE "Customer not found" VIEW-AS ALERT-BOX INFO.
-        END. 
+        oCustomer    = NEW Backend.Customer().
+        
+        lcRes = oCustomer:getCustomerWithAccounts( INPUT INTEGER(FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME)).
+        lcData = Frontend.Utility.Utility:ReadResponse(lcRes).
+        MESSAGE STRING(lcData) .
     END.
 
 /* _UIB-CODE-BLOCK-END */
