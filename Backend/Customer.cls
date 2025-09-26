@@ -24,7 +24,7 @@ CLASS Backend.Customer:
         FIELD postal_code    AS INTEGER
         FIELD Country        AS CHARACTER
         FIELD email          AS CHARACTER
-        FIELD mobile_num     AS CHARACTER.
+        FIELD Phone_num     AS CHARACTER.
         
     
     CONSTRUCTOR PUBLIC Customer():
@@ -67,7 +67,7 @@ CLASS Backend.Customer:
                 ttCustomerDetails.postal_code    = CustomerDetails.ZipCode
                 ttCustomerDetails.Country        = CustomerDetails.Country
                 ttCustomerDetails.email          = CustomerDetails.EmailId
-                ttCustomerDetails.mobile_num     = CustomerDetails.Phone.
+                ttCustomerDetails.Phone_num     = CustomerDetails.Phone.
             /*                ttCustomerDetails.date_created = CustomerDetails*/
             /*                ttCustomerDetails.date_modified = CustomerDetails.date_modified.*/
             RETURN TRUE.
@@ -101,7 +101,7 @@ CLASS Backend.Customer:
                     CustomerDetails.ZipCode       = ttCustomerDetails.postal_code
                     CustomerDetails.Country       = ttCustomerDetails.Country
                     CustomerDetails.EmailId       = ttCustomerDetails.email
-                    CustomerDetails.Phone         = ttCustomerDetails.mobile_num.
+                    CustomerDetails.Phone         = ttCustomerDetails.Phone_num.
                 /*                    CustomerDetails.date_created = TODAY*/
                 /*                    CustomerDetails.date_modified = TODAY.*/
                 
@@ -136,7 +136,7 @@ CLASS Backend.Customer:
                         CustomerDetails.ZipCode       = ttCustomerDetails.postal_code
                         CustomerDetails.Country       = ttCustomerDetails.Country
                         CustomerDetails.EmailId       = ttCustomerDetails.email
-                        CustomerDetails.Phone         = ttCustomerDetails.mobile_num
+                        CustomerDetails.Phone         = ttCustomerDetails.Phone_num
                         lSuccess                      = TRUE.
                 END.
             END.
@@ -193,7 +193,7 @@ CLASS Backend.Customer:
                 ttCustomerDetails.postal_code    = CustomerDetails.ZipCode
                 ttCustomerDetails.Country        = CustomerDetails.Country
                 ttCustomerDetails.email          = CustomerDetails.email
-                ttCustomerDetails.mobile_num     = CustomerDetails.Phone.
+                ttCustomerDetails.Phone_num     = CustomerDetails.Phone.
         END.
         
         FIND FIRST ttCustomerDetails NO-ERROR.
@@ -212,39 +212,39 @@ CLASS Backend.Customer:
     END METHOD.
       
         
-    METHOD PUBLIC LONGCHAR searchCustomers(
-        INPUT cFirstName AS CHARACTER,
-        INPUT cLastName  AS CHARACTER,
-        INPUT cPhone     AS CHARACTER,
-        INPUT cEmail     AS CHARACTER
-        ):
-        DEFINE VARIABLE oResponse AS JsonArray  NO-UNDO.
-        DEFINE VARIABLE oCust     AS JsonObject NO-UNDO.
-        DEFINE VARIABLE lcResult  AS LONGCHAR   NO-UNDO.
+   METHOD PUBLIC LONGCHAR searchCustomers(
+    INPUT cFirstName AS CHARACTER,
+    INPUT cLastName  AS CHARACTER,
+    INPUT cPhone    AS CHARACTER,
+    INPUT cEmail     AS CHARACTER):
 
-        oResponse = NEW JsonArray().
+    DEFINE VARIABLE oResponse AS JsonArray  NO-UNDO.
+    DEFINE VARIABLE oCust     AS JsonObject NO-UNDO.
+    DEFINE VARIABLE lcResult  AS LONGCHAR   NO-UNDO.
 
-        FOR EACH CustomerDetails NO-LOCK
-            WHERE (cFirstName = "" OR CustomerDetails.FirstName BEGINS cFirstName)
-            AND (cLastName  = "" OR CustomerDetails.LastName  BEGINS cLastName)
-            AND (cPhone     = "" OR CustomerDetails.Phone     BEGINS cPhone)
-            AND (cEmail     = "" OR CustomerDetails.Email     BEGINS cEmail):
+    oResponse = NEW JsonArray().
 
-            oCust = NEW JsonObject().
-            oCust:Add("CustID",    CustomerDetails.CustID).
-            oCust:Add("FirstName", CustomerDetails.FirstName).
-            oCust:Add("LastName",  CustomerDetails.LastName).
-            oCust:Add("Phone",     CustomerDetails.Phone).
-            oCust:Add("Email",     CustomerDetails.Email).
+    FOR EACH CustomerDetails NO-LOCK
+        WHERE (cFirstName = "" OR CustomerDetails.FirstName BEGINS cFirstName)
+          AND (cLastName  = "" OR CustomerDetails.LastName  BEGINS cLastName)
+          AND (cPhone    = "" OR CustomerDetails.Phone BEGINS cPhone)
+          AND (cEmail     = "" OR CustomerDetails.Email BEGINS cEmail):
 
-            oResponse:Add(oCust).
-        END.
+        oCust = NEW JsonObject().
+        oCust:Add("CustID",    CustomerDetails.CustID).
+        oCust:Add("FirstName", CustomerDetails.FirstName).
+        oCust:Add("LastName",  CustomerDetails.LastName).
+        oCust:Add("Phone",    CustomerDetails.Phone).
+        oCust:Add("EmailId",   CustomerDetails.Email).
 
-        /* Serialize JSON array to string */
-        oResponse:Write(lcResult).
+        oResponse:Add(oCust).
+    END.
 
-        RETURN lcResult.
-    END METHOD.
+    oResponse:Write(lcResult).
+
+    RETURN lcResult.
+
+END METHOD.
     
     
     

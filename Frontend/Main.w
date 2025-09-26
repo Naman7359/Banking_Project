@@ -450,21 +450,23 @@ ON CHOOSE OF BTN-AddAccount IN FRAME DEFAULT-FRAME /* Add Account */
 &Scoped-define SELF-NAME BTN-AdvanceSearch
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-AdvanceSearch C-Win
 ON CHOOSE OF BTN-AdvanceSearch IN FRAME DEFAULT-FRAME /* Advance Search */
-    DO:
-        DEFINE VARIABLE iCustID AS INTEGER NO-UNDO.
+DO:
+    DEFINE VARIABLE iCustID AS INTEGER NO-UNDO.
 
-        /* Run Customer Filler dialog for search */
-        RUN Customer_Filler.w (
-            OUTPUT iCustID
-            ).
+    /* Open Customer Filter dialog and get selected CustID */
+    RUN Customer_Filler.w (OUTPUT iCustID).  
 
-        /* If a customer was selected, fill the Customer ID and trigger search */
-        IF iCustID > 0 THEN 
-        DO:
-            FLN-CustID:SCREEN-VALUE = STRING(iCustID).
-            APPLY "CHOOSE" TO BTN-Search.
-        END.
+    /* If a customer was selected, populate fields and trigger Search */
+    IF iCustID <> 0 THEN DO:
+        FLN-CustID:SCREEN-VALUE = STRING(iCustID).
+
+        /* Trigger Search button logic to fill main form fields */
+        APPLY "CHOOSE" TO BTN-Search IN FRAME DEFAULT-FRAME.
+
+        /* Load Orders and Order Lines for the selected customer */
+/*        RUN Load_Orders(iCustID).*/
     END.
+END.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
@@ -741,6 +743,17 @@ END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
+
+
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE Load_Orders C-Win
+PROCEDURE Load_Orders:
+
+END PROCEDURE.
+    
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE Search_Customer C-Win 
 PROCEDURE Search_Customer :

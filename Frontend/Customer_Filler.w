@@ -1,5 +1,7 @@
 &ANALYZE-SUSPEND _VERSION-NUMBER AB_v10r12 GUI
 &ANALYZE-RESUME
+/* Connected Databases 
+*/
 &Scoped-define WINDOW-NAME CURRENT-WINDOW
 &Scoped-define FRAME-NAME Dialog-Frame
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CUSTOM _DEFINITIONS Dialog-Frame 
@@ -35,7 +37,7 @@ DEFINE TEMP-TABLE ttCustomer NO-UNDO
     FIELD FirstName     AS CHARACTER
     FIELD LastName      AS CHARACTER
     FIELD Phone         AS CHARACTER
-    FIELD Email         AS CHARACTER
+    FIELD EmailId       AS CHARACTER
     FIELD Address       AS CHARACTER
     FIELD City          AS CHARACTER
     FIELD State         AS CHARACTER
@@ -61,7 +63,22 @@ DEFINE TEMP-TABLE ttCustomer NO-UNDO
 &Scoped-define FRAME-NAME Dialog-Frame
 &Scoped-define BROWSE-NAME BRW-CustomerDetails
 
+/* Internal Tables (found by Frame, Query & Browse Queries)             */
+&Scoped-define INTERNAL-TABLES ttCustomer
+
+/* Definitions for BROWSE BRW-CustomerDetails                           */
+&Scoped-define FIELDS-IN-QUERY-BRW-CustomerDetails   
+&Scoped-define ENABLED-FIELDS-IN-QUERY-BRW-CustomerDetails   
+&Scoped-define SELF-NAME BRW-CustomerDetails
+&Scoped-define QUERY-STRING-BRW-CustomerDetails FOR EACH ttCustomer
+&Scoped-define OPEN-QUERY-BRW-CustomerDetails OPEN QUERY {&SELF-NAME} FOR EACH ttCustomer.
+&Scoped-define TABLES-IN-QUERY-BRW-CustomerDetails ttCustomer
+&Scoped-define FIRST-TABLE-IN-QUERY-BRW-CustomerDetails ttCustomer
+
+
 /* Definitions for DIALOG-BOX Dialog-Frame                              */
+&Scoped-define OPEN-BROWSERS-IN-QUERY-Dialog-Frame ~
+    ~{&OPEN-QUERY-BRW-CustomerDetails}
 
 /* Standard List Definitions                                            */
 &Scoped-Define ENABLED-OBJECTS RECT-1 RECT-2 FLN-FirstName FLN-LastName ~
@@ -83,78 +100,84 @@ FLN-Email
 
 /* Definitions of the field level widgets                               */
 DEFINE BUTTON BTN-Cancel 
-     LABEL "Cancel" 
-     SIZE 15 BY 1.13.
+    LABEL "Cancel" 
+    SIZE 15 BY 1.13.
 
 DEFINE BUTTON BTN-Okay 
-     LABEL "Okay" 
-     SIZE 15 BY 1.13.
+    LABEL "Okay" 
+    SIZE 15 BY 1.13.
 
 DEFINE BUTTON BTN-Search 
-     LABEL "Search" 
-     SIZE 15 BY 1.13.
+    LABEL "Search" 
+    SIZE 15 BY 1.13.
 
-DEFINE VARIABLE FLN-Email AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Email" 
-     VIEW-AS FILL-IN 
-     SIZE 14 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-Email     AS CHARACTER FORMAT "X(256)":U 
+    LABEL "Email" 
+    VIEW-AS FILL-IN 
+    SIZE 14 BY 1 NO-UNDO.
 
 DEFINE VARIABLE FLN-FirstName AS CHARACTER FORMAT "X(256)":U 
-     LABEL "First Name" 
-     VIEW-AS FILL-IN 
-     SIZE 14 BY 1 NO-UNDO.
+    LABEL "First Name" 
+    VIEW-AS FILL-IN 
+    SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-LastName AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Last Name" 
-     VIEW-AS FILL-IN 
-     SIZE 14 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-LastName  AS CHARACTER FORMAT "X(256)":U 
+    LABEL "Last Name" 
+    VIEW-AS FILL-IN 
+    SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-Phone AS CHARACTER FORMAT "X(256)":U 
-     LABEL "Phone No," 
-     VIEW-AS FILL-IN 
-     SIZE 14 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-Phone     AS CHARACTER FORMAT "X(256)":U 
+    LABEL "Phone No," 
+    VIEW-AS FILL-IN 
+    SIZE 14 BY 1 NO-UNDO.
 
 DEFINE RECTANGLE RECT-1
-     EDGE-PIXELS 10  NO-FILL   
-     SIZE 59 BY 6.5.
+    EDGE-PIXELS 10  NO-FILL   
+    SIZE 59 BY 6.5.
 
 DEFINE RECTANGLE RECT-2
-     EDGE-PIXELS 10  NO-FILL   
-     SIZE 58 BY 5.75.
+    EDGE-PIXELS 10  NO-FILL   
+    SIZE 58 BY 6.25.
 
+/* Query definitions                                                    */
+&ANALYZE-SUSPEND
+DEFINE QUERY BRW-CustomerDetails FOR 
+    ttCustomer SCROLLING.
+&ANALYZE-RESUME
 
 /* Browse definitions                                                   */
 DEFINE BROWSE BRW-CustomerDetails
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS BRW-CustomerDetails Dialog-Frame _STRUCTURED
-  
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS BRW-CustomerDetails Dialog-Frame _FREEFORM
+    QUERY BRW-CustomerDetails DISPLAY
+    ttCustomer
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
-    WITH NO-ROW-MARKERS SEPARATORS SIZE 52 BY 4 FIT-LAST-COLUMN.
+    WITH NO-ROW-MARKERS SEPARATORS SIZE 53 BY 4.5 FIT-LAST-COLUMN.
 
 
 /* ************************  Frame Definitions  *********************** */
 
 DEFINE FRAME Dialog-Frame
-     FLN-FirstName AT ROW 4 COL 13 COLON-ALIGNED WIDGET-ID 4
-     FLN-LastName AT ROW 4 COL 40 COLON-ALIGNED WIDGET-ID 6
-     FLN-Phone AT ROW 6 COL 13 COLON-ALIGNED WIDGET-ID 8
-     FLN-Email AT ROW 6 COL 40 COLON-ALIGNED WIDGET-ID 10
-     BTN-Search AT ROW 7.5 COL 24.5 WIDGET-ID 14
-     BRW-CustomerDetails AT ROW 11.75 COL 6 WIDGET-ID 200
-     BTN-Okay AT ROW 17.25 COL 11 WIDGET-ID 22
-     BTN-Cancel AT ROW 17.25 COL 37 WIDGET-ID 24
-     "Customer Details" VIEW-AS TEXT
-          SIZE 19 BY 1 AT ROW 9.75 COL 23 WIDGET-ID 16
-          FONT 5
-     "CUSTOMER FILTER" VIEW-AS TEXT
-          SIZE 24 BY 1 AT ROW 1.5 COL 20 WIDGET-ID 2
-          FONT 1
-     RECT-1 AT ROW 3 COL 3 WIDGET-ID 12
-     RECT-2 AT ROW 11 COL 3 WIDGET-ID 20
-     SPACE(2.74) SKIP(2.12)
+    FLN-FirstName AT ROW 3.5 COL 13 COLON-ALIGNED WIDGET-ID 4
+    FLN-LastName AT ROW 3.5 COL 40 COLON-ALIGNED WIDGET-ID 6
+    FLN-Phone AT ROW 5.5 COL 13 COLON-ALIGNED WIDGET-ID 8
+    FLN-Email AT ROW 5.5 COL 40 COLON-ALIGNED WIDGET-ID 10
+    BTN-Search AT ROW 7.25 COL 23 WIDGET-ID 14
+    BRW-CustomerDetails AT ROW 11.5 COL 5 WIDGET-ID 200
+    BTN-Okay AT ROW 17.25 COL 11 WIDGET-ID 22
+    BTN-Cancel AT ROW 17.25 COL 37 WIDGET-ID 24
+    "Customer Details" VIEW-AS TEXT
+    SIZE 19 BY 1 AT ROW 9 COL 22 WIDGET-ID 16
+    FONT 5
+    "CUSTOMER FILTER" VIEW-AS TEXT
+    SIZE 24 BY 1 AT ROW 1.5 COL 22 WIDGET-ID 2
+    FONT 1
+    RECT-1 AT ROW 10.5 COL 2 WIDGET-ID 12
+    RECT-2 AT ROW 2.75 COL 2 WIDGET-ID 20
+    SPACE(1.62) SKIP(9.87)
     WITH VIEW-AS DIALOG-BOX KEEP-TAB-ORDER 
-         SIDE-LABELS NO-UNDERLINE THREE-D  SCROLLABLE 
-         TITLE "<insert dialog title>" WIDGET-ID 100.
+    SIDE-LABELS NO-UNDERLINE THREE-D  SCROLLABLE 
+    TITLE "<insert dialog title>" WIDGET-ID 100.
 
 
 /* *********************** Procedure Settings ************************ */
@@ -176,10 +199,22 @@ DEFINE FRAME Dialog-Frame
    FRAME-NAME                                                           */
 /* BROWSE-TAB BRW-CustomerDetails BTN-Search Dialog-Frame */
 ASSIGN 
-       FRAME Dialog-Frame:SCROLLABLE       = FALSE
-       FRAME Dialog-Frame:HIDDEN           = TRUE.
+    FRAME Dialog-Frame:SCROLLABLE = FALSE
+    FRAME Dialog-Frame:HIDDEN     = TRUE.
 
 /* _RUN-TIME-ATTRIBUTES-END */
+&ANALYZE-RESUME
+
+
+/* Setting information for Queries and Browse Widgets fields            */
+
+&ANALYZE-SUSPEND _QUERY-BLOCK BROWSE BRW-CustomerDetails
+/* Query rebuild information for BROWSE BRW-CustomerDetails
+     _START_FREEFORM
+OPEN QUERY {&SELF-NAME} FOR EACH ttCustomer.
+     _END_FREEFORM
+     _Query            is OPENED
+*/  /* BROWSE BRW-CustomerDetails */
 &ANALYZE-RESUME
 
  
@@ -191,7 +226,7 @@ ASSIGN
 &Scoped-define SELF-NAME Dialog-Frame
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL Dialog-Frame Dialog-Frame
 ON WINDOW-CLOSE OF FRAME Dialog-Frame /* <insert dialog title> */
-DO:
+    DO:
         APPLY "END-ERROR":U TO SELF.
     END.
 
@@ -202,7 +237,7 @@ DO:
 &Scoped-define SELF-NAME BTN-Cancel
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Cancel Dialog-Frame
 ON CHOOSE OF BTN-Cancel IN FRAME Dialog-Frame /* Cancel */
-DO:
+    DO:
   
     END.
 
@@ -213,15 +248,14 @@ DO:
 &Scoped-define SELF-NAME BTN-Okay
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Okay Dialog-Frame
 ON CHOOSE OF BTN-Okay IN FRAME Dialog-Frame /* Okay */
-DO:
-      IF AVAILABLE ttCustomer THEN
-        iCustID = ttCustomer.CustID.
-    ELSE
-        iCustID = 0.
+    DO:
+        IF AVAILABLE ttCustomer THEN
+            iCustID = ttCustomer.CustID.
+        ELSE
+            iCustID = 0.
+        APPLY "CLOSE" TO SELF.
+    END.
 
-    APPLY "CLOSE" TO THIS-PROCEDURE. /* return to Main.w */
-END.
-    
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
@@ -229,9 +263,14 @@ END.
 &Scoped-define SELF-NAME BTN-Search
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Search Dialog-Frame
 ON CHOOSE OF BTN-Search IN FRAME Dialog-Frame /* Search */
-DO:
-  RUN DoCustomerSearch.
-END.
+    DO:
+        RUN runCustomerSearch. /* Collects FLN-* values, calls backend, fills ttCustomer */
+    
+        /* Refresh the browse to display filtered results */
+        QUERY BRW-CustomerDetails:QUERY-CLOSE ().
+        QUERY BRW-CustomerDetails:QUERY-Prepare ("For each ttCustomer NO-LOCK").
+        QUERY BRW-CustomerDetails:QUERY-OPEN().
+    END.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
@@ -266,32 +305,54 @@ RUN disable_UI.
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE disable_UI Dialog-Frame  _DEFAULT-DISABLE
 PROCEDURE disable_UI :
-/*------------------------------------------------------------------------------
-  Purpose:     DISABLE the User Interface
-  Parameters:  <none>
-  Notes:       Here we clean-up the user-interface by deleting
-               dynamic widgets we have created and/or hide 
-               frames.  This procedure is usually called when
-               we are ready to "clean-up" after running.
-------------------------------------------------------------------------------*/
-  /* Hide all frames. */
-  HIDE FRAME Dialog-Frame.
+    /*------------------------------------------------------------------------------
+      Purpose:     DISABLE the User Interface
+      Parameters:  <none>
+      Notes:       Here we clean-up the user-interface by deleting
+                   dynamic widgets we have created and/or hide 
+                   frames.  This procedure is usually called when
+                   we are ready to "clean-up" after running.
+    ------------------------------------------------------------------------------*/
+    /* Hide all frames. */
+    HIDE FRAME Dialog-Frame.
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE enable_UI Dialog-Frame  _DEFAULT-ENABLE
+PROCEDURE enable_UI :
+    /*------------------------------------------------------------------------------
+      Purpose:     ENABLE the User Interface
+      Parameters:  <none>
+      Notes:       Here we display/view/enable the widgets in the
+                   user-interface.  In addition, OPEN all queries
+                   associated with each FRAME and BROWSE.
+                   These statements here are based on the "Other 
+                   Settings" section of the widget Property Sheets.
+    ------------------------------------------------------------------------------*/
+    DISPLAY FLN-FirstName FLN-LastName FLN-Phone FLN-Email 
+        WITH FRAME Dialog-Frame.
+    ENABLE RECT-1 RECT-2 FLN-FirstName FLN-LastName FLN-Phone FLN-Email 
+        BTN-Search BRW-CustomerDetails BTN-Okay BTN-Cancel 
+        WITH FRAME Dialog-Frame.
+    VIEW FRAME Dialog-Frame.
+    {&OPEN-BROWSERS-IN-QUERY-Dialog-Frame}
+END PROCEDURE.
 
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE DoCustomerSearch Dialog-Frame
-PROCEDURE DoCustomerSearch:
-    DEFINE VARIABLE oSearch   AS Backend.Customer_Filler_Search NO-UNDO.
-    DEFINE VARIABLE lcResult  AS LONGCHAR NO-UNDO.
-    DEFINE VARIABLE oParser   AS ObjectModelParser NO-UNDO.
-    DEFINE VARIABLE oArray    AS JsonArray NO-UNDO.
-    DEFINE VARIABLE oCust     AS JsonObject NO-UNDO.
-    DEFINE VARIABLE i         AS INTEGER NO-UNDO.
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
 
-    /* Clear previous browse records */
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE runCustomerSearch Dialog-Frame 
+PROCEDURE runCustomerSearch :
+    DEFINE VARIABLE oSearch  AS CLASS             Customer NO-UNDO.
+    DEFINE VARIABLE lcResult AS LONGCHAR          NO-UNDO.
+    DEFINE VARIABLE oParser  AS ObjectModelParser NO-UNDO.
+    DEFINE VARIABLE oArray   AS JsonArray         NO-UNDO.
+    DEFINE VARIABLE oCust    AS JsonObject        NO-UNDO.
+    DEFINE VARIABLE i        AS INTEGER           NO-UNDO.
+
+    /* Clear previous search results */
     EMPTY TEMP-TABLE ttCustomer.
 
     /* Collect input values from UI fields */
@@ -301,18 +362,18 @@ PROCEDURE DoCustomerSearch:
     DEFINE VARIABLE cEmail     AS CHARACTER NO-UNDO.
 
     ASSIGN
-        cFirstName = FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame.
-        cLastName  = FLN-LastName:SCREEN-VALUE IN FRAME Dialog-Frame.
-        cPhone     = FLN-Phone:SCREEN-VALUE IN FRAME Dialog-Frame.
+        cFirstName = FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame
+        cLastName  = FLN-LastName:SCREEN-VALUE IN FRAME Dialog-Frame
+        cPhone     = FLN-Phone:SCREEN-VALUE IN FRAME Dialog-Frame
         cEmail     = FLN-Email:SCREEN-VALUE IN FRAME Dialog-Frame.
 
-    /* Call backend search class */
-    oSearch  = NEW Backend.Customer_Filler_Search().
+    /* Call backend search method */
+    oSearch  = NEW Customer().
     lcResult = oSearch:searchCustomers(
-                    INPUT cFirstName,
-                    INPUT cLastName,
-                    INPUT cPhone,
-                    INPUT cEmail).
+        INPUT cFirstName,
+        INPUT cLastName,
+        INPUT cPhone,
+        INPUT cEmail).
 
     /* Parse JSON result into temp-table */
     oParser = NEW ObjectModelParser().
@@ -327,37 +388,9 @@ PROCEDURE DoCustomerSearch:
             ttCustomer.FirstName = oCust:GetCharacter("FirstName")
             ttCustomer.LastName  = oCust:GetCharacter("LastName")
             ttCustomer.Phone     = oCust:GetCharacter("Phone")
-            ttCustomer.Email     = oCust:GetCharacter("Email").
+            ttCustomer.EmailId   = oCust:GetCharacter("EmailId").
     END.
 
-    /* Refresh browse so user sees updated records */
-    BROWSE BRW-CustomerDetails:REFRESH().
-END PROCEDURE.
-
-    
-/* _UIB-CODE-BLOCK-END */
-&ANALYZE-RESUME
-
-
-
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE enable_UI Dialog-Frame  _DEFAULT-ENABLE
-PROCEDURE enable_UI :
-/*------------------------------------------------------------------------------
-  Purpose:     ENABLE the User Interface
-  Parameters:  <none>
-  Notes:       Here we display/view/enable the widgets in the
-               user-interface.  In addition, OPEN all queries
-               associated with each FRAME and BROWSE.
-               These statements here are based on the "Other 
-               Settings" section of the widget Property Sheets.
-------------------------------------------------------------------------------*/
-  DISPLAY FLN-FirstName FLN-LastName FLN-Phone FLN-Email 
-      WITH FRAME Dialog-Frame.
-  ENABLE RECT-1 RECT-2 FLN-FirstName FLN-LastName FLN-Phone FLN-Email 
-         BTN-Search BTN-Okay BTN-Cancel 
-      WITH FRAME Dialog-Frame.
-  VIEW FRAME Dialog-Frame.
-  {&OPEN-BROWSERS-IN-QUERY-Dialog-Frame}
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
