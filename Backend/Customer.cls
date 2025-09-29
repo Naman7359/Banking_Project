@@ -9,28 +9,11 @@ USING Progress.Json.ObjectModel.*.
 
 CLASS Backend.Customer:
     
-    
-    DEFINE PRIVATE TEMP-TABLE ttCustomerDetails NO-UNDO
-        FIELD CustID         AS INTEGER
-        FIELD FirstName      AS CHARACTER
-        FIELD LastName       AS CHARACTER
-        FIELD date_of_birth  AS DATE
-        FIELD marital_status AS CHARACTER
-        FIELD address        AS CHARACTER
-        FIELD address_2      AS CHARACTER
-        FIELD City           AS CHARACTER
-        FIELD State          AS CHARACTER
-        FIELD postal_code    AS INTEGER
-        FIELD Country        AS CHARACTER
-        FIELD email          AS CHARACTER
-        FIELD mobile_num     AS CHARACTER.
+    {Backend/Utility/temp_table.i}
         
-    
     CONSTRUCTOR PUBLIC Customer():
         SUPER().
-
     END CONSTRUCTOR.
-    
     
     METHOD PUBLIC LOGICAL GetCustomerDetails(INPUT piCustId AS INTEGER,
         OUTPUT TABLE ttCustomerDetails):
@@ -54,8 +37,6 @@ CLASS Backend.Customer:
                 ttCustomerDetails.Country        = CustomerDetails.Country
                 ttCustomerDetails.email          = CustomerDetails.EmailId
                 ttCustomerDetails.mobile_num     = CustomerDetails.Phone.
-            /*                ttCustomerDetails.date_created = CustomerDetails*/
-            /*                ttCustomerDetails.date_modified = CustomerDetails.date_modified.*/
             RETURN TRUE.
         END.
         RETURN FALSE.
@@ -88,10 +69,7 @@ CLASS Backend.Customer:
                     CustomerDetails.Country       = ttCustomerDetails.Country
                     CustomerDetails.EmailId       = ttCustomerDetails.email
                     CustomerDetails.Phone         = ttCustomerDetails.mobile_num.
-                /*                    CustomerDetails.date_created = TODAY*/
-                /*                    CustomerDetails.date_modified = TODAY.*/
                 
-                /* Update temp-table with generated CustomerDetails ID */
                 ttCustomerDetails.CustID = CustomerDetails.CustID.
                 lSuccess = TRUE.
             END.
@@ -165,13 +143,6 @@ CLASS Backend.Customer:
         DEFINE VARIABLE lSuccess AS LOGICAL NO-UNDO INITIAL FALSE.
         
         DO TRANSACTION ON ERROR UNDO, THROW:
-            /* Check if CustomerDetails has accounts */
-            FIND FIRST CustomerAccounts WHERE CustomerAccounts.CustID = piCustId NO-LOCK NO-ERROR.
-            IF AVAILABLE account THEN 
-            DO:
-                /* CustomerDetails has accounts, cannot delete */
-                RETURN FALSE.
-            END.
             
             FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = piCustId EXCLUSIVE-LOCK NO-ERROR.
             IF AVAILABLE CustomerDetails THEN 
@@ -498,7 +469,480 @@ CLASS Backend.Customer:
 
     END METHOD.
 
+    
+    
+    METHOD PUBLIC LOGICAL GetCitiesByPostalCode(INPUT piPostalCode AS CHARACTER,
+        OUTPUT TABLE ttCities):
+        /*------------------------------------------------------------------------
+            Purpose     : Get cities for a postal code - simplified version
+            Parameters  : INPUT postal code, OUTPUT temp-table with city results
+            Returns     : TRUE if cities found, FALSE otherwise
+            Notes       : Matches City table structure from image
+          ----------------------------------------------------------------------*/
+    
+        DEFINE VARIABLE cFoundCityCode AS CHARACTER NO-UNDO.
+        DEFINE VARIABLE lSuccess       AS LOGICAL   NO-UNDO INITIAL FALSE.
+    
+        /* Clear the output temp-table */
+        EMPTY TEMP-TABLE ttCities.
+    
+        /* Validate input parameter */
+        IF piPostalCode = "" OR piPostalCode = ? THEN 
+        DO:
+            RETURN FALSE.
+        END.
+    
+        DO ON ERROR UNDO, THROW:
+        
+            /* Find the postal code in PostalCode table */
+            FIND FIRST PostalCode WHERE PostalCode.ZIPCode = piPostalCode NO-LOCK NO-ERROR.
+        
+            IF NOT AVAILABLE PostalCode THEN 
+            DO:
+                RETURN FALSE.
+            END.
+        
+            /* Get the city code from PostalCode table */
+            cFoundCityCode = PostalCode.CityCode.
+        
+            /* Build city records in temp-table - matching your City table structure */
+            FOR EACH City WHERE City.CityCode = cFoundCityCode NO-LOCK:
+            
+                CREATE ttCities.
+                ASSIGN 
+                    ttCities.CityCode  = City.CityCode
+                    ttCities.CityName  = City.CityName
+                    ttCities.StateCode = City.StateCode.
+            
+                lSuccess = TRUE.
+            END.
+            RETURN lSuccess.
+        END.
+    
+        CATCH eError AS Progress.Lang.Error:
+            /* Clear temp-table on error */
+            EMPTY TEMP-TABLE ttCities.
+            RETURN FALSE.
+        END CATCH.
+        
+    END METHOD.
+    
+    
+    METHOD PUBLIC LOGICAL GetStatesByCityName(INPUT pcCityName AS CHARACTER,
+        OUTPUT TABLE ttStateDetails):
+        /*------------------------------------------------------------------------
+            Purpose     : Get states for a given city name using temp-table
+            Parameters  : INPUT city name, OUTPUT temp-table with state results
+            Returns     : TRUE if states found, FALSE otherwise
+            Notes       : Returns state information based on city name lookup
+          ----------------------------------------------------------------------*/
+    
+        DEFINE VARIABLE cFoundStateCode AS CHARACTER NO-UNDO.
+        DEFINE VARIABLE lSuccess        AS LOGICAL   NO-UNDO INITIAL FALSE.
+    
+        /* Clear the output temp-table */
+        EMPTY TEMP-TABLE ttStateDetails.
+    
+        /* Validate input parameter */
+        IF pcCityName = "" OR pcCityName = ? THEN 
+        DO:
+            RETURN FALSE.
+        END.
+    
+        DO ON ERROR UNDO, THROW:
+        
+            /* Find the city to get the state code */
+            FIND FIRST City WHERE City.CityName = pcCityName NO-LOCK NO-ERROR.
+        
+            IF NOT AVAILABLE City THEN 
+            DO:
+                RETURN FALSE.
+            END.
+        
+            /* Get the state code from City table */
+            cFoundStateCode = City.StateCode.
+        
+            /* Build state records in temp-table using the state code */
+            FOR EACH State WHERE State.StateCode = cFoundStateCode NO-LOCK:
+            
+                CREATE ttStateDetails.
+                ASSIGN 
+                    ttStateDetails.StateCode   = State.StateCode
+                    ttStateDetails.StateName   = State.StateName
+                    ttStateDetails.CountryCode = State.CountryCode.
+            
+                lSuccess = TRUE.
+            END.
+            RETURN lSuccess.
+        END.
+        CATCH eError AS Progress.Lang.Error:
+            /* Clear temp-table on error */
+            EMPTY TEMP-TABLE ttStateDetails.
+            RETURN FALSE.
+        END CATCH.
+    
+    
+    END METHOD.
 
+
+    METHOD PUBLIC LOGICAL GetCountriesByStateName(INPUT pcStateName AS CHARACTER,
+        OUTPUT TABLE ttCountryDetails):
+        /*------------------------------------------------------------------------
+            Purpose     : Get countries for a given state name using temp-table
+            Parameters  : INPUT state name, OUTPUT temp-table with country results
+            Returns     : TRUE if countries found, FALSE otherwise
+            Notes       : Returns country information based on state name lookup
+          ----------------------------------------------------------------------*/
+    
+        DEFINE VARIABLE cFoundCountryCode AS CHARACTER NO-UNDO.
+        DEFINE VARIABLE lSuccess          AS LOGICAL   NO-UNDO INITIAL FALSE.
+    
+        /* Clear the output temp-table */
+        EMPTY TEMP-TABLE ttCountryDetails.
+    
+        /* Validate input parameter */
+        IF pcStateName = "" OR pcStateName = ? THEN 
+        DO:
+            RETURN FALSE.
+        END.
+    
+        DO ON ERROR UNDO, THROW:
+        
+            /* Find the state to get the country code */
+            FIND FIRST State WHERE State.StateName = pcStateName NO-LOCK NO-ERROR.
+        
+            IF NOT AVAILABLE State THEN 
+            DO:
+                RETURN FALSE.
+            END.
+        
+            /* Get the country code from State table */
+            cFoundCountryCode = State.CountryCode.
+        
+            /* Build country records in temp-table using the country code */
+            FOR EACH Country WHERE Country.CountryCode = cFoundCountryCode NO-LOCK:
+            
+                CREATE ttCountryDetails.
+                ASSIGN 
+                    ttCountryDetails.CountryCode = Country.CountryCode
+                    ttCountryDetails.CountryName = Country.CountryName.
+            
+                lSuccess = TRUE.
+            END.
+            RETURN lSuccess.
+        END.
+        CATCH eError AS Progress.Lang.Error:
+            /* Clear temp-table on error */
+            EMPTY TEMP-TABLE ttCountryDetails.
+            RETURN FALSE.
+        END CATCH.
+    
+    
+    END METHOD.
+    
+    
+    METHOD PUBLIC LOGICAL GetAllCountries(OUTPUT TABLE ttCountryDetails):
+        /*------------------------------------------------------------------------
+            Purpose     : Get all countries sorted alphabetically
+            Parameters  : OUTPUT temp-table with all country results
+            Returns     : TRUE if countries found, FALSE otherwise
+            Notes       : Returns all countries from database sorted by name
+          ----------------------------------------------------------------------*/
+    
+        DEFINE VARIABLE iCountryCount AS INTEGER NO-UNDO INITIAL 0.
+        DEFINE VARIABLE lSuccess      AS LOGICAL NO-UNDO INITIAL FALSE.
+    
+        /* Clear the output temp-table */
+        EMPTY TEMP-TABLE ttCountryDetails.
+    
+        DO ON ERROR UNDO, THROW:
+        
+            /* Build complete country list from Country table, sorted by name */
+            FOR EACH Country NO-LOCK BY Country.CountryName:
+            
+                CREATE ttCountryDetails.
+                ASSIGN 
+                    ttCountryDetails.CountryCode = Country.CountryCode
+                    ttCountryDetails.CountryName = Country.CountryName.
+            
+                iCountryCount = iCountryCount + 1.
+            END.
+        
+            /* Set success flag if countries were found */
+            IF iCountryCount > 0 THEN
+                lSuccess = TRUE.
+            RETURN lSuccess.
+        END.
+        CATCH eError AS Progress.Lang.Error:
+            /* Clear temp-table on error */
+            EMPTY TEMP-TABLE ttCountryDetails.
+            RETURN FALSE.
+        END CATCH.
+    
+    
+    END METHOD.
+
+
+    METHOD PUBLIC LOGICAL GetAllStates(OUTPUT TABLE ttStateDetails):
+        /*------------------------------------------------------------------------
+            Purpose     : Get all states sorted alphabetically
+            Parameters  : OUTPUT temp-table with all state results
+            Returns     : TRUE if states found, FALSE otherwise
+            Notes       : Returns all states from database sorted by name
+          ----------------------------------------------------------------------*/
+    
+        DEFINE VARIABLE iStateCount AS INTEGER NO-UNDO INITIAL 0.
+        DEFINE VARIABLE lSuccess    AS LOGICAL NO-UNDO INITIAL FALSE.
+    
+        /* Clear the output temp-table */
+        EMPTY TEMP-TABLE ttStateDetails.
+    
+        DO ON ERROR UNDO, THROW:
+        
+            /* Build complete state list from State table, sorted by name */
+            FOR EACH State NO-LOCK BY State.StateName:
+            
+                CREATE ttStateDetails.
+                ASSIGN 
+                    ttStateDetails.StateCode   = State.StateCode
+                    ttStateDetails.StateName   = State.StateName
+                    ttStateDetails.CountryCode = State.CountryCode.
+            
+                iStateCount = iStateCount + 1.
+            END.
+        
+            /* Set success flag if states were found */
+            IF iStateCount > 0 THEN
+                lSuccess = TRUE.
+            RETURN lSuccess.
+        END.
+        CATCH eError AS Progress.Lang.Error:
+            /* Clear temp-table on error */
+            EMPTY TEMP-TABLE ttStateDetails.
+            RETURN FALSE.
+        END CATCH.
+    
+    
+    END METHOD.
+
+
+    METHOD PUBLIC LOGICAL GetStatesByCountryName(INPUT pcCountryName AS CHARACTER,
+        OUTPUT TABLE ttStateDetails):
+        /*------------------------------------------------------------------------
+            Purpose     : Get states for a given country name using temp-table
+            Parameters  : INPUT country name, OUTPUT temp-table with state results
+            Returns     : TRUE if states found, FALSE otherwise
+            Notes       : Returns states filtered by country name, sorted by state name
+          ----------------------------------------------------------------------*/
+    
+        DEFINE VARIABLE cFoundCountryCode AS CHARACTER NO-UNDO.
+        DEFINE VARIABLE iStateCount       AS INTEGER   NO-UNDO INITIAL 0.
+        DEFINE VARIABLE lSuccess          AS LOGICAL   NO-UNDO INITIAL FALSE.
+    
+        /* Clear the output temp-table */
+        EMPTY TEMP-TABLE ttStateDetails.
+    
+        /* Validate input parameter */
+        IF pcCountryName = "" OR pcCountryName = ? THEN 
+        DO:
+            RETURN FALSE.
+        END.
+    
+        DO ON ERROR UNDO, THROW:
+        
+            /* Find the country to get the country code */
+            FIND FIRST Country WHERE Country.CountryName = pcCountryName NO-LOCK NO-ERROR.
+        
+            IF NOT AVAILABLE Country THEN 
+            DO:
+                RETURN FALSE.
+            END.
+        
+            /* Get the country code from Country table */
+            cFoundCountryCode = Country.CountryCode.
+        
+            /* Build state records in temp-table filtered by country code */
+            FOR EACH State WHERE State.CountryCode = cFoundCountryCode NO-LOCK BY State.StateName:
+            
+                CREATE ttStateDetails.
+                ASSIGN 
+                    ttStateDetails.StateCode   = State.StateCode
+                    ttStateDetails.StateName   = State.StateName
+                    ttStateDetails.CountryCode = State.CountryCode.
+            
+                iStateCount = iStateCount + 1.
+                lSuccess = TRUE.
+                RETURN lSuccess.
+            END.
+        END.
+    
+        CATCH eError AS Progress.Lang.Error:
+            /* Clear temp-table on error */
+            EMPTY TEMP-TABLE ttStateDetails.
+            RETURN FALSE.
+        END CATCH.
+    
+    END METHOD.
+
+
+
+    METHOD PUBLIC LOGICAL GetAllCities(OUTPUT TABLE ttCities):
+        /*------------------------------------------------------------------------
+            Purpose     : Get all cities sorted alphabetically
+            Parameters  : OUTPUT temp-table with all city results
+            Returns     : TRUE if cities found, FALSE otherwise
+            Notes       : Returns all cities from database sorted by name
+          ----------------------------------------------------------------------*/
+    
+        DEFINE VARIABLE iCityCount AS INTEGER NO-UNDO INITIAL 0.
+        DEFINE VARIABLE lSuccess   AS LOGICAL NO-UNDO INITIAL FALSE.
+    
+        /* Clear the output temp-table */
+        EMPTY TEMP-TABLE ttCities.
+    
+        DO ON ERROR UNDO, THROW:
+        
+            /* Build complete city list from City table, sorted by name */
+            FOR EACH City NO-LOCK BY City.CityName:
+            
+                CREATE ttCities.
+                ASSIGN 
+                    ttCities.CityCode  = City.CityCode
+                    ttCities.CityName  = City.CityName
+                    ttCities.StateCode = City.StateCode.
+            
+                iCityCount = iCityCount + 1.
+            END.
+        
+            /* Set success flag if cities were found */
+            IF iCityCount > 0 THEN
+                lSuccess = TRUE.
+            RETURN lSuccess.
+        END.    
+        CATCH eError AS Progress.Lang.Error:
+            /* Clear temp-table on error */
+            EMPTY TEMP-TABLE ttCities.
+            RETURN FALSE.
+        END CATCH.
+    
+    
+    END METHOD.
+    
+    
+    
+    METHOD PUBLIC LOGICAL GetCustomerForForm(INPUT piCustomerId AS INTEGER,
+        OUTPUT TABLE ttCustomerDetails):
+        /*------------------------------------------------------------------------
+            Purpose     : Get customer details for form population
+            Parameters  : INPUT customer ID, OUTPUT temp-table with customer data
+            Returns     : TRUE if customer found, FALSE otherwise
+            Notes       : Returns customer data formatted for UI display
+          ----------------------------------------------------------------------*/
+    
+        DEFINE VARIABLE lSuccess AS LOGICAL NO-UNDO INITIAL FALSE.
+    
+        /* Clear the output temp-table */
+        EMPTY TEMP-TABLE ttCustomerDetails.
+    
+        /* Validate input parameter */
+        IF piCustomerId <= 0 THEN 
+        DO:
+            RETURN FALSE.
+        END.
+    
+        DO ON ERROR UNDO, THROW:
+        
+            /* Find the customer record */
+            FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = piCustomerId NO-LOCK NO-ERROR.
+        
+            IF AVAILABLE CustomerDetails THEN 
+            DO:
+                /* Create temp-table record with customer data */
+                CREATE ttCustomerDetails.
+                ASSIGN 
+                    ttCustomerDetails.CustID         = CustomerDetails.CustID
+                    ttCustomerDetails.FirstName      = CustomerDetails.FirstName
+                    ttCustomerDetails.LastName       = CustomerDetails.LastName
+                    ttCustomerDetails.date_of_birth  = CustomerDetails.DOB
+                    ttCustomerDetails.marital_status = CustomerDetails.MaritalStatus
+                    ttCustomerDetails.address        = CustomerDetails.Address1
+                    ttCustomerDetails.address_2      = CustomerDetails.Address2
+                    ttCustomerDetails.City           = CustomerDetails.City
+                    ttCustomerDetails.State          = CustomerDetails.State
+                    ttCustomerDetails.postal_code    = CustomerDetails.ZipCode
+                    ttCustomerDetails.Country        = CustomerDetails.Country
+                    ttCustomerDetails.email          = CustomerDetails.EmailId
+                    ttCustomerDetails.mobile_num     = CustomerDetails.Phone.
+            
+                lSuccess = TRUE.
+            END.
+            RETURN lSuccess.
+        END.    
+        CATCH eError AS Progress.Lang.Error:
+            /* Clear temp-table on error */
+            EMPTY TEMP-TABLE ttCustomerDetails.
+            RETURN FALSE.
+        END CATCH.
+    
+    END METHOD.
+
+    METHOD PUBLIC LOGICAL GetCitiesByStateName(INPUT pcStateName AS CHARACTER,
+        OUTPUT TABLE ttCities):
+        /*------------------------------------------------------------------------
+            Purpose     : Get cities for a given state name using temp-table
+            Parameters  : INPUT state name, OUTPUT temp-table with city results
+            Returns     : TRUE if cities found, FALSE otherwise
+            Notes       : Returns cities filtered by state name, sorted by city name
+          ----------------------------------------------------------------------*/
+    
+        DEFINE VARIABLE cFoundStateCode AS CHARACTER NO-UNDO.
+        DEFINE VARIABLE iCityCount      AS INTEGER   NO-UNDO INITIAL 0.
+        DEFINE VARIABLE lSuccess        AS LOGICAL   NO-UNDO INITIAL FALSE.
+    
+        /* Clear the output temp-table */
+        EMPTY TEMP-TABLE ttCities.
+    
+        /* Validate input parameter */
+        IF pcStateName = "" OR pcStateName = ? THEN 
+        DO:
+            RETURN FALSE.
+        END.
+    
+        DO ON ERROR UNDO, THROW:
+        
+            /* Find the state to get state code */
+            FIND FIRST State WHERE State.StateName = pcStateName NO-LOCK NO-ERROR.
+        
+            IF NOT AVAILABLE State THEN 
+            DO:
+                RETURN FALSE.
+            END.
+        
+            /* Get state code */
+            cFoundStateCode = State.StateCode.
+        
+            /* Build city records filtered by state code */
+            FOR EACH City WHERE City.StateCode = cFoundStateCode NO-LOCK BY City.CityName:
+            
+                CREATE ttCities.
+                ASSIGN 
+                    ttCities.CityCode  = City.CityCode
+                    ttCities.CityName  = City.CityName
+                    ttCities.StateCode = City.StateCode.
+            
+                iCityCount = iCityCount + 1.
+                lSuccess = TRUE.
+            END.
+            RETURN lSuccess.
+        END.
+        CATCH eError AS Progress.Lang.Error:
+            /* Clear temp-table on error */
+            EMPTY TEMP-TABLE ttCities.
+            RETURN FALSE.
+        END CATCH.
+    
+    
+    END METHOD.
 
 
     DESTRUCTOR PUBLIC Customer():

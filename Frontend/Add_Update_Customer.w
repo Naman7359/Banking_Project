@@ -22,6 +22,12 @@
 /*          This .W file was created with the Progress AppBuilder.       */
 /*----------------------------------------------------------------------*/
 USING Backend.Utiity.*.
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CUSTOM _DECLARATIONS Procedure
+
+USING Backend.Customer FROM PROPATH.
+{Backend/Utility/temp_table.i}
+
+&ANALYZE-RESUME
 /* ***************************  Definitions  ************************** */
 
 /* Parameters Definitions ---         
@@ -30,20 +36,6 @@ DEFINE INPUT PARAMETER piCustomerId AS INTEGER NO-UNDO.
 DEFINE INPUT PARAMETER cAction AS CHARACTER NO-UNDO.           
 
 /* Local Variable Definitions ---                                       */
-DEFINE TEMP-TABLE ttCustomerDetails NO-UNDO
-    FIELD CustID         AS INTEGER
-    FIELD FirstName      AS CHARACTER
-    FIELD LastName       AS CHARACTER
-    FIELD date_of_birth  AS DATE
-    FIELD marital_status AS CHARACTER
-    FIELD address        AS CHARACTER
-    FIELD address_2      AS CHARACTER
-    FIELD City           AS CHARACTER
-    FIELD State          AS CHARACTER
-    FIELD postal_code    AS INTEGER
-    FIELD Country        AS CHARACTER
-    FIELD email          AS CHARACTER
-    FIELD mobile_num     AS CHARACTER.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
@@ -345,369 +337,658 @@ RUN disable_UI.
 
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE InitialSetup Dialog-Frame
-PROCEDURE InitialSetup:
-    /*------------------------------------------------------------------------------
-     Purpose:
-     Notes:
-    ------------------------------------------------------------------------------*/
+PROCEDURE InitialSetup :
+    /*-----------------------------------------------------------
+       Purpose : One-time form setup + load customer (update mode)
+    -----------------------------------------------------------*/
+
+    /* 1.  Populate the static lists */
     RUN populate-all-countries.
     RUN populate-all-states.
     RUN populate-all-cities.
     RUN populate-marital-status.
-    
-    /* Load customer data if ID provided */
-    IF piCustomerId > 0 and lc(cAction  ) = "update" THEN 
-    DO:
-        FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = piCustomerId NO-LOCK NO-ERROR.
-        IF AVAILABLE CustomerDetails THEN 
+
+    /* 2.  Only continue if we are in UPDATE mode */
+    IF piCustomerId > 0                                             
+        AND CAN-DO("update", STRING(lc(cAction))) THEN 
+    DO:              
+
+        DEFINE VARIABLE oCtr   AS Backend.Customer NO-UNDO.
+        DEFINE VARIABLE lFound AS LOGICAL          NO-UNDO.
+
+        /* Clear temp-table that will receive the data */
+        EMPTY TEMP-TABLE ttCustomerDetails.
+
+        /* --- call the class method --- */
+        oCtr  = NEW Backend.Customer().
+        lFound = oCtr:GetCustomerForForm( INPUT  piCustomerId
+            , OUTPUT TABLE ttCustomerDetails).
+
+        IF lFound THEN 
         DO:
-            /* Just brutally overwrite all the screen values */
-            FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame = CustomerDetails.FirstName.
-            FLN-LastName:SCREEN-VALUE IN FRAME Dialog-Frame = CustomerDetails.LastName.
-            FLN-DateOfBirth:SCREEN-VALUE IN FRAME Dialog-Frame = STRING(CustomerDetails.DOB, "99/99/99").
-            FLN-Address:SCREEN-VALUE IN FRAME Dialog-Frame = CustomerDetails.Address1.
-            FLN-Address_2:SCREEN-VALUE IN FRAME Dialog-Frame = CustomerDetails.Address2.
-            FLN-Postalcode:SCREEN-VALUE IN FRAME Dialog-Frame = STRING(CustomerDetails.ZipCode).
-            
-            /* Set combo box values directly */
-            CMB-MaritalStatus:SCREEN-VALUE IN FRAME Dialog-Frame = CustomerDetails.MaritalStatus.
-            CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame = CustomerDetails.Country.
-            CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame = CustomerDetails.State.
-            CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame = CustomerDetails.City.
+            FIND FIRST ttCustomerDetails NO-ERROR.
+            IF AVAILABLE ttCustomerDetails THEN
+                ASSIGN
+                    /* fill-ins */
+                    FLN-FirstName:SCREEN-VALUE IN FRAME Dialog-Frame     = ttCustomerDetails.FirstName
+                    FLN-LastName:SCREEN-VALUE  IN FRAME Dialog-Frame     = ttCustomerDetails.LastName
+                    FLN-DateOfBirth:SCREEN-VALUE IN FRAME Dialog-Frame   = (IF ttCustomerDetails.date_of_birth <> ?
+                          THEN STRING(ttCustomerDetails.date_of_birth,"99/99/9999") ELSE "")
+                    FLN-Address:SCREEN-VALUE  IN FRAME Dialog-Frame      = ttCustomerDetails.address
+                    FLN-Address_2:SCREEN-VALUE IN FRAME Dialog-Frame     = ttCustomerDetails.address_2
+                    FLN-Postalcode:SCREEN-VALUE IN FRAME Dialog-Frame    = (IF ttCustomerDetails.postal_code <> ?
+                          THEN STRING(ttCustomerDetails.postal_code) ELSE "")
+                    /* combo-boxes */
+                    CMB-MaritalStatus:SCREEN-VALUE IN FRAME Dialog-Frame = ttCustomerDetails.marital_status
+                    CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame       = ttCustomerDetails.Country
+                    CMB-State:SCREEN-VALUE   IN FRAME Dialog-Frame       = ttCustomerDetails.State
+                    CMB-City:SCREEN-VALUE    IN FRAME Dialog-Frame       = ttCustomerDetails.City.
         END.
-    END.
+        ELSE
+            MESSAGE "Customer ID" piCustomerId "not found." VIEW-AS ALERT-BOX WARNING.
+
+        /* tidy up */
+        IF VALID-OBJECT(oCtr) THEN DELETE OBJECT oCtr NO-ERROR.
+    END. /* update mode */
 
 END PROCEDURE.
-    
+
+
+
+
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
 
 
 PROCEDURE populate-city-combo:
-    DEFINE VARIABLE entered-postal  AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE found-city-code AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE city-list       AS CHARACTER NO-UNDO.
+    /*------------------------------------------------------------------------
+        Purpose: Populate city combo box based on postal code
+        Notes:   Uses Backend.Customer class method
+      ----------------------------------------------------------------------*/
     
+    DEFINE VARIABLE entered-postal AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE city-list      AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE lFound         AS LOGICAL   NO-UNDO.
+    DEFINE VARIABLE oController    AS Customer  NO-UNDO.
+    DEFINE VARIABLE iCityCount     AS INTEGER   NO-UNDO INITIAL 0.
+
     /* Get the postal code entered by user */
     entered-postal = TRIM(FLN-Postalcode:SCREEN-VALUE IN FRAME Dialog-Frame).
-    
+
     /* Clear the combo box first */
     CMB-City:LIST-ITEMS IN FRAME Dialog-Frame = "".
-    
+    CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame = "".
+
     /* Check if postal code is entered */
-    IF entered-postal = "" THEN RETURN.
-    
-    /* Find the postal code in PostalCode table */
-    FIND FIRST PostalCode WHERE PostalCode.ZIPCode = entered-postal NO-LOCK NO-ERROR.
-    
-    IF AVAILABLE PostalCode THEN 
+    IF entered-postal = "" OR entered-postal = ? THEN 
     DO:
-        /* Get the city code from PostalCode table */
-        found-city-code = PostalCode.CItyCode.
+        MESSAGE "Please enter a postal code." VIEW-AS ALERT-BOX INFO.
+        RETURN.
+    END.
+
+    /* Clear previous temp-table data */
+    EMPTY TEMP-TABLE ttCities.
+
+    /* Create controller instance and call method */
+    DO ON ERROR UNDO, THROW:
         
-        /* Build city list from City table based on city code */
-        FOR EACH City WHERE City.CityCode = found-city-code NO-LOCK:
-            IF city-list = "" THEN
-                city-list = City.CityName.
-            ELSE
-                city-list = city-list + "," + City.CityName.
-        END.
-        
-        /* Populate the CMB-City combo box */
-        IF city-list <> "" THEN 
+        oController = NEW Backend.Customer().
+        lFound = oController:GetCitiesByPostalCode(INPUT entered-postal, OUTPUT TABLE ttCities).
+
+        IF lFound THEN 
         DO:
-            CMB-City:LIST-ITEMS IN FRAME Dialog-Frame = city-list.
-            /* Optionally select the first city */
-            CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame = ENTRY(1, city-list).
+            /* Build city list from temp-table */
+            FOR EACH ttCities:
+                IF city-list = "" THEN
+                    city-list = ttCities.CityName.
+                ELSE
+                    city-list = city-list + "," + ttCities.CityName.
+                    
+                iCityCount = iCityCount + 1.
+            END.
+
+            /* Populate the CMB-City combo box */
+            IF city-list <> "" THEN 
+            DO:
+                CMB-City:LIST-ITEMS IN FRAME Dialog-Frame = city-list.
+                /* Optionally select the first city */
+                CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame = ENTRY(1, city-list).
+                
+                MESSAGE "Found" iCityCount "city(ies) for postal code" entered-postal
+                    VIEW-AS ALERT-BOX INFO.
+            END.
         END.
         ELSE 
         DO:
-            MESSAGE "No cities found for postal code" entered-postal VIEW-AS ALERT-BOX.
+            MESSAGE "No cities found for postal code" entered-postal 
+                VIEW-AS ALERT-BOX WARNING.
         END.
     END.
-    ELSE 
-    DO:
-        /* Postal code not found */
-        MESSAGE "Postal code" entered-postal "not found in database" VIEW-AS ALERT-BOX.
-        CMB-City:LIST-ITEMS IN FRAME Dialog-Frame = "".
-    END.
+    CATCH eError AS Progress.Lang.Error:
+        MESSAGE "Error retrieving cities: " + eError:GetMessage(1)
+            VIEW-AS ALERT-BOX ERROR.
+    END CATCH.
+    
+    FINALLY:
+        /* Clean up controller object */
+        IF VALID-OBJECT(oController) THEN
+            DELETE OBJECT oController NO-ERROR.
+    END FINALLY.
+
 END PROCEDURE.
 
 
 PROCEDURE populate-state-combo:
+    /*------------------------------------------------------------------------
+        Purpose: Populate state combo box using class method
+        Notes:   Uses Backend.Customer class method with ttStateDetails temp-table
+      ----------------------------------------------------------------------*/
     
-    DEFINE VARIABLE cStateCode AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE cStateList AS CHARACTER NO-UNDO.
-    
-    /* Clear the state combo box first */
+    DEFINE VARIABLE oController   AS Backend.Customer NO-UNDO.
+    DEFINE VARIABLE cSelectedCity AS CHARACTER        NO-UNDO.
+    DEFINE VARIABLE cStateList    AS CHARACTER        NO-UNDO.
+    DEFINE VARIABLE lFound        AS LOGICAL          NO-UNDO.
+
+    /* Get selected city from combo box */
+    cSelectedCity = TRIM(CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame).
+
+    /* Clear the state combo box */
     CMB-State:LIST-ITEMS IN FRAME Dialog-Frame = "".
-    
-    FIND FIRST City WHERE City.CityName = CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame NO-LOCK NO-ERROR.
-    
-    IF AVAILABLE City THEN 
+    CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame = "".
+
+    /* Validate city selection */
+    IF cSelectedCity = "" OR cSelectedCity = ? THEN 
     DO:
-        cStateCode = City.StateCode.
+        RETURN.
+    END.
+
+    /* Clear previous temp-table data */
+    EMPTY TEMP-TABLE ttStateDetails.
+
+    /* Use class method to get states */
+    DO ON ERROR UNDO, THROW:
         
-        /* Build state list using the state code from City table */
-        FOR EACH State WHERE State.StateCode = cStateCode NO-LOCK:
-            IF cStateList = "" THEN
-                cStateList = State.StateName.
-            ELSE
-                cStateList = cStateList + "," + State.StateName.
-        END.
-        
-        /* Populate the state combo box */
-        IF cStateList <> "" THEN 
+        oController = NEW Backend.Customer().
+        lFound = oController:GetStatesByCityName(INPUT cSelectedCity, 
+            OUTPUT TABLE ttStateDetails).
+
+        IF lFound THEN 
         DO:
-            CMB-State:LIST-ITEMS IN FRAME Dialog-Frame = cStateList.
-            /* Optionally select the first state */
-            CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame = ENTRY(1, cStateList).
+            /* Build state list from temp-table */
+            FOR EACH ttStateDetails:
+                IF cStateList = "" THEN
+                    cStateList = ttStateDetails.StateName.
+                ELSE
+                    cStateList = cStateList + "," + ttStateDetails.StateName.
+            END.
+
+            /* Populate the state combo box */
+            IF cStateList <> "" THEN 
+            DO:
+                CMB-State:LIST-ITEMS IN FRAME Dialog-Frame = cStateList.
+                /* Optionally select the first state */
+                CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame = ENTRY(1, cStateList).
+                
+                MESSAGE "Found states for city:" cSelectedCity VIEW-AS ALERT-BOX INFO.
+            END.
         END.
         ELSE 
         DO:
-            MESSAGE "No states found for state code:" cStateCode VIEW-AS ALERT-BOX.
+            MESSAGE "No states found for city:" cSelectedCity VIEW-AS ALERT-BOX INFO.
         END.
     END.
-    ELSE 
-    DO:
-        MESSAGE "City not found:" CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame VIEW-AS ALERT-BOX.
-    END.
-    
-END PROCEDURE.
 
+    CATCH eError AS Progress.Lang.Error:
+        MESSAGE "Error retrieving states: " + eError:GetMessage(1)
+            VIEW-AS ALERT-BOX ERROR.
+    END CATCH.
+    
+    FINALLY:
+        /* Clean up */
+        IF VALID-OBJECT(oController) THEN
+            DELETE OBJECT oController NO-ERROR.
+    END FINALLY.
+
+END PROCEDURE.
 
 PROCEDURE populate-country-combo:
+    /*------------------------------------------------------------------------
+        Purpose: Populate country combo box using class method
+        Notes:   Uses Backend.Customer class method with ttCountryDetails temp-table
+      ----------------------------------------------------------------------*/
     
-    DEFINE VARIABLE cCountryCode AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE cCountryList AS CHARACTER NO-UNDO.
-    
-    /* Clear the country combo box first */
+    DEFINE VARIABLE oController    AS Backend.Customer NO-UNDO.
+    DEFINE VARIABLE cSelectedState AS CHARACTER        NO-UNDO.
+    DEFINE VARIABLE cCountryList   AS CHARACTER        NO-UNDO.
+    DEFINE VARIABLE lFound         AS LOGICAL          NO-UNDO.
+
+    /* Get selected state from combo box */
+    cSelectedState = TRIM(CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame).
+
+    /* Clear the country combo box */
     CMB-Country:LIST-ITEMS IN FRAME Dialog-Frame = "".
-    
-    FIND FIRST State WHERE State.StateName = CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame NO-LOCK NO-ERROR.
-    
-    IF AVAILABLE State THEN 
+    CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame = "".
+
+    /* Validate state selection */
+    IF cSelectedState = "" OR cSelectedState = ? THEN 
     DO:
-        cCountryCode = State.CountryCode.
+        RETURN.
+    END.
+
+    /* Clear previous temp-table data */
+    EMPTY TEMP-TABLE ttCountryDetails.
+
+    /* Use class method to get countries */
+    DO ON ERROR UNDO, THROW:
         
-        /* Build country list using the country code from State table */
-        FOR EACH Country WHERE Country.CountryCode = cCountryCode NO-LOCK:
-            IF cCountryList = "" THEN
-                cCountryList = Country.CountryName.
-            ELSE
-                cCountryList = cCountryList + "," + Country.CountryName.
-        END.
-        
-        /* Populate the country combo box */
-        IF cCountryList <> "" THEN 
+        oController = NEW Backend.Customer().
+        lFound = oController:GetCountriesByStateName(INPUT cSelectedState, 
+            OUTPUT TABLE ttCountryDetails).
+
+        IF lFound THEN 
         DO:
-            CMB-Country:LIST-ITEMS IN FRAME Dialog-Frame = cCountryList.
-            /* Optionally select the first country */
-            CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame = ENTRY(1, cCountryList).
+            /* Build country list from temp-table */
+            FOR EACH ttCountryDetails:
+                IF cCountryList = "" THEN
+                    cCountryList = ttCountryDetails.CountryName.
+                ELSE
+                    cCountryList = cCountryList + "," + ttCountryDetails.CountryName.
+            END.
+
+            /* Populate the country combo box */
+            IF cCountryList <> "" THEN 
+            DO:
+                CMB-Country:LIST-ITEMS IN FRAME Dialog-Frame = cCountryList.
+                /* Optionally select the first country */
+                CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame = ENTRY(1, cCountryList).
+                
+                MESSAGE "Found countries for state:" cSelectedState VIEW-AS ALERT-BOX INFO.
+            END.
         END.
         ELSE 
         DO:
-            MESSAGE "No countries found for country code:" cCountryCode VIEW-AS ALERT-BOX.
+            MESSAGE "No countries found for state:" cSelectedState VIEW-AS ALERT-BOX INFO.
         END.
     END.
-    ELSE 
-    DO:
-        MESSAGE "State not found:" CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame VIEW-AS ALERT-BOX.
-    END.
+    CATCH eError AS Progress.Lang.Error:
+        MESSAGE "Error retrieving countries: " + eError:GetMessage(1)
+            VIEW-AS ALERT-BOX ERROR.
+    END CATCH.
     
+    FINALLY:
+        /* Clean up */
+        IF VALID-OBJECT(oController) THEN
+            DELETE OBJECT oController NO-ERROR.
+    END FINALLY.
+
 END PROCEDURE.
+
 
 /*populate ALL countries*/
 PROCEDURE populate-all-countries:
+    /*------------------------------------------------------------------------
+        Purpose: Populate country combo box with all countries using class method
+        Notes:   Uses Backend.Customer class method with ttCountryDetails temp-table
+      ----------------------------------------------------------------------*/
     
-    DEFINE VARIABLE cCountryList AS CHARACTER NO-UNDO.
-    
-    /* Clear the country combo box first */
+    DEFINE VARIABLE oController   AS Backend.Customer NO-UNDO.
+    DEFINE VARIABLE cCountryList  AS CHARACTER        NO-UNDO.
+    DEFINE VARIABLE lFound        AS LOGICAL          NO-UNDO.
+    DEFINE VARIABLE iCountryCount AS INTEGER          NO-UNDO INITIAL 0.
+
+    /* Clear the country combo box */
     CMB-Country:LIST-ITEMS IN FRAME Dialog-Frame = "".
-    
-    /* Build complete country list from Country table */
-    FOR EACH Country NO-LOCK BY Country.CountryName:
-        IF cCountryList = "" THEN
-            cCountryList = Country.CountryName.
-        ELSE
-            cCountryList = cCountryList + "," + Country.CountryName.
+    CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame = "".
+
+    /* Clear previous temp-table data */
+    EMPTY TEMP-TABLE ttCountryDetails.
+
+    /* Use class method to get all countries */
+    DO ON ERROR UNDO, THROW:
+        
+        oController = NEW Backend.Customer().
+        lFound = oController:GetAllCountries(OUTPUT TABLE ttCountryDetails).
+
+        IF lFound THEN 
+        DO:
+            /* Build country list from temp-table (already sorted by name) */
+            FOR EACH ttCountryDetails:
+                IF cCountryList = "" THEN
+                    cCountryList = ttCountryDetails.CountryName.
+                ELSE
+                    cCountryList = cCountryList + "," + ttCountryDetails.CountryName.
+                    
+                iCountryCount = iCountryCount + 1.
+            END.
+
+            /* Populate the country combo box */
+            IF cCountryList <> "" THEN 
+            DO:
+                CMB-Country:LIST-ITEMS IN FRAME Dialog-Frame = cCountryList.
+                
+            /* Optional: Show count message */
+            /* MESSAGE "Loaded" iCountryCount "countries" VIEW-AS ALERT-BOX INFO BUTTONS OK. */
+            END.
+        END.
+        ELSE 
+        DO:
+            MESSAGE "No countries found in database" VIEW-AS ALERT-BOX WARNING BUTTONS OK.
+        END.
+
+        CATCH eError AS Progress.Lang.Error:
+            MESSAGE "Error retrieving countries: " + eError:GetMessage(1)
+                VIEW-AS ALERT-BOX ERROR.
+        END CATCH.
     END.
-    
-    /* Populate the country combo box with all countries */
-    IF cCountryList <> "" THEN 
-    DO:
-        CMB-Country:LIST-ITEMS IN FRAME Dialog-Frame = cCountryList.
-    /*        MESSAGE "Loaded" NUM-ENTRIES(cCountryList) "countries" VIEW-AS ALERT-BOX INFO BUTTONS OK.*/
-    END.
-    ELSE 
-    DO:
-        MESSAGE "No countries found in database" VIEW-AS ALERT-BOX WARNING BUTTONS OK.
-    END.
-    
+    FINALLY:
+        /* Clean up */
+        IF VALID-OBJECT(oController) THEN
+            DELETE OBJECT oController NO-ERROR.
+    END FINALLY.
+
 END PROCEDURE.
+
 
 
 /*populate ALL states*/
 PROCEDURE populate-all-states:
+    /*------------------------------------------------------------------------
+        Purpose: Populate state combo box with all states using class method
+        Notes:   Uses Backend.Customer class method with ttStateDetails temp-table
+      ----------------------------------------------------------------------*/
     
-    DEFINE VARIABLE cStateList AS CHARACTER NO-UNDO.
-    
-    /* Clear the state combo box first */
+    DEFINE VARIABLE oController AS Backend.Customer NO-UNDO.
+    DEFINE VARIABLE cStateList  AS CHARACTER        NO-UNDO.
+    DEFINE VARIABLE lFound      AS LOGICAL          NO-UNDO.
+    DEFINE VARIABLE iStateCount AS INTEGER          NO-UNDO INITIAL 0.
+
+    /* Clear the state combo box */
     CMB-State:LIST-ITEMS IN FRAME Dialog-Frame = "".
-    
-    /* Build complete state list from State table */
-    FOR EACH State NO-LOCK BY State.StateName:
-        IF cStateList = "" THEN
-            cStateList = State.StateName.
-        ELSE
-            cStateList = cStateList + "," + State.StateName.
-    END.
-    
-    /* Populate the state combo box with all states */
-    IF cStateList <> "" THEN 
-    DO:
-        CMB-State:LIST-ITEMS IN FRAME Dialog-Frame = cStateList.
-    /*        MESSAGE "Loaded" NUM-ENTRIES(cStateList) "states" VIEW-AS ALERT-BOX INFO BUTTONS OK.*/
-    END.
-    ELSE 
-    DO:
-        MESSAGE "No states found in database" VIEW-AS ALERT-BOX WARNING BUTTONS OK.
-    END.
-    
+    CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame = "".
+
+    /* Clear previous temp-table data */
+    EMPTY TEMP-TABLE ttStateDetails.
+
+    /* Use class method to get all states */
+    DO ON ERROR UNDO, THROW:
+        
+        oController = NEW Backend.Customer().
+        lFound = oController:GetAllStates(OUTPUT TABLE ttStateDetails).
+
+        IF lFound THEN 
+        DO:
+            /* Build state list from temp-table (already sorted by name) */
+            FOR EACH ttStateDetails:
+                IF cStateList = "" THEN
+                    cStateList = ttStateDetails.StateName.
+                ELSE
+                    cStateList = cStateList + "," + ttStateDetails.StateName.
+                    
+                iStateCount = iStateCount + 1.
+            END.
+
+            /* Populate the state combo box */
+            IF cStateList <> "" THEN 
+            DO:
+                CMB-State:LIST-ITEMS IN FRAME Dialog-Frame = cStateList.
+                
+            /* Optional: Show count message */
+            /* MESSAGE "Loaded" iStateCount "states" VIEW-AS ALERT-BOX INFO BUTTONS OK. */
+            END.
+        END.
+        ELSE 
+        DO:
+            MESSAGE "No states found in database" VIEW-AS ALERT-BOX WARNING BUTTONS OK.
+        END.
+
+        CATCH eError AS Progress.Lang.Error:
+            MESSAGE "Error retrieving states: " + eError:GetMessage(1)
+                VIEW-AS ALERT-BOX ERROR.
+        END CATCH.
+    END.    
+    FINALLY:
+        /* Clean up */
+        IF VALID-OBJECT(oController) THEN
+            DELETE OBJECT oController NO-ERROR.
+    END FINALLY.
+
 END PROCEDURE.
 
 
-/*populate ALL cities*/
+
 PROCEDURE populate-all-cities:
+    /*------------------------------------------------------------------------
+        Purpose: Populate city combo box with all cities using class method
+        Notes:   Uses Backend.Customer class method with ttCities temp-table
+      ----------------------------------------------------------------------*/
     
-    DEFINE VARIABLE cCityList AS CHARACTER NO-UNDO.
-    
-    /* Clear the city combo box first */
+    DEFINE VARIABLE oController AS Backend.Customer NO-UNDO.
+    DEFINE VARIABLE cCityList   AS CHARACTER        NO-UNDO.
+    DEFINE VARIABLE lFound      AS LOGICAL          NO-UNDO.
+    DEFINE VARIABLE iCityCount  AS INTEGER          NO-UNDO INITIAL 0.
+
+    /* Clear the city combo box */
     CMB-City:LIST-ITEMS IN FRAME Dialog-Frame = "".
-    
-    /* Build complete city list from City table */
-    FOR EACH City NO-LOCK BY City.CityName:
-        IF cCityList = "" THEN
-            cCityList = City.CityName.
-        ELSE
-            cCityList = cCityList + "," + City.CityName.
-    END.
-    
-    /* Populate the city combo box with all cities */
-    IF cCityList <> "" THEN 
-    DO:
-        CMB-City:LIST-ITEMS IN FRAME Dialog-Frame = cCityList.
-    /*        MESSAGE "Loaded" NUM-ENTRIES(cCityList) "cities" VIEW-AS ALERT-BOX INFO BUTTONS OK.*/
-    END.
-    ELSE 
-    DO:
-        MESSAGE "No cities found in database" VIEW-AS ALERT-BOX WARNING BUTTONS OK.
-    END.
-    
+    CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame = "".
+
+    /* Clear previous temp-table data */
+    EMPTY TEMP-TABLE ttCities.
+
+    /* Use class method to get all cities */
+    DO ON ERROR UNDO, THROW:
+        
+        oController = NEW Backend.Customer().
+        lFound = oController:GetAllCities(OUTPUT TABLE ttCities).
+
+        IF lFound THEN 
+        DO:
+            /* Build city list from temp-table (already sorted by name) */
+            FOR EACH ttCities:
+                IF cCityList = "" THEN
+                    cCityList = ttCities.CityName.
+                ELSE
+                    cCityList = cCityList + "," + ttCities.CityName.
+                    
+                iCityCount = iCityCount + 1.
+            END.
+
+            /* Populate the city combo box */
+            IF cCityList <> "" THEN 
+            DO:
+                CMB-City:LIST-ITEMS IN FRAME Dialog-Frame = cCityList.
+                
+            /* Optional: Show count message */
+            /* MESSAGE "Loaded" iCityCount "cities" VIEW-AS ALERT-BOX INFO BUTTONS OK. */
+            END.
+        END.
+        ELSE 
+        DO:
+            MESSAGE "No cities found in database" VIEW-AS ALERT-BOX WARNING BUTTONS OK.
+        END.
+
+        CATCH eError AS Progress.Lang.Error:
+            MESSAGE "Error retrieving cities: " + eError:GetMessage(1)
+                VIEW-AS ALERT-BOX ERROR.
+        END CATCH.
+    END.    
+    FINALLY:
+        /* Clean up */
+        IF VALID-OBJECT(oController) THEN
+            DELETE OBJECT oController NO-ERROR.
+    END FINALLY.
+
 END PROCEDURE.
 
 
 PROCEDURE populate-states-by-country:
+    /*------------------------------------------------------------------------
+        Purpose: Populate state combo box filtered by selected country using class method
+        Notes:   Uses Backend.Customer class method with ttStateDetails temp-table
+      ----------------------------------------------------------------------*/
     
-    DEFINE VARIABLE selectedCountry AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE countryCode     AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE stateList       AS CHARACTER NO-UNDO.
-    
+    DEFINE VARIABLE oController     AS Backend.Customer NO-UNDO.
+    DEFINE VARIABLE selectedCountry AS CHARACTER        NO-UNDO.
+    DEFINE VARIABLE stateList       AS CHARACTER        NO-UNDO.
+    DEFINE VARIABLE lFound          AS LOGICAL          NO-UNDO.
+    DEFINE VARIABLE iStateCount     AS INTEGER          NO-UNDO INITIAL 0.
+
     /* Get selected country name */
-    selectedCountry = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame.
+    selectedCountry = TRIM(CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame).
     
     /* Clear states and cities combo boxes */
     CMB-State:LIST-ITEMS IN FRAME Dialog-Frame = "".
     CMB-City:LIST-ITEMS IN FRAME Dialog-Frame = "".
+    CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame = "".
+    CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame = "".
     
-    IF selectedCountry = "" OR selectedCountry = ? THEN RETURN.
-    
-    /* Find country record to get country code */
-    FIND FIRST Country WHERE Country.CountryName = selectedCountry NO-LOCK NO-ERROR.
-    
-    IF AVAILABLE Country THEN 
+    /* Validate country selection */
+    IF selectedCountry = "" OR selectedCountry = ? THEN 
     DO:
-        countryCode = Country.CountryCode.
+        CMB-State:SENSITIVE IN FRAME Dialog-Frame = FALSE.
+        RETURN.
+    END.
+
+    /* Clear previous temp-table data */
+    EMPTY TEMP-TABLE ttStateDetails.
+
+    /* Use class method to get states for selected country */
+    DO ON ERROR UNDO, THROW:
         
-        /* Build state list for the selected country */
-        FOR EACH State WHERE State.CountryCode = countryCode NO-LOCK BY State.StateName:
-            IF stateList = "" THEN
-                stateList = State.StateName.
-            ELSE
-                stateList = stateList + "," + State.StateName.
-        END.
-        
-        /* Populate states combo box */
-        IF stateList <> "" THEN 
+        oController = NEW Backend.Customer().
+        lFound = oController:GetStatesByCountryName(INPUT selectedCountry, 
+            OUTPUT TABLE ttStateDetails).
+
+        IF lFound THEN 
         DO:
-            CMB-State:LIST-ITEMS IN FRAME Dialog-Frame = stateList.
-            CMB-State:SENSITIVE IN FRAME Dialog-Frame = TRUE.
+            /* Build state list from temp-table (already sorted by name) */
+            FOR EACH ttStateDetails:
+                IF stateList = "" THEN
+                    stateList = ttStateDetails.StateName.
+                ELSE
+                    stateList = stateList + "," + ttStateDetails.StateName.
+                    
+                iStateCount = iStateCount + 1.
+            END.
+
+            /* Populate states combo box */
+            IF stateList <> "" THEN 
+            DO:
+                CMB-State:LIST-ITEMS IN FRAME Dialog-Frame = stateList.
+                CMB-State:SENSITIVE IN FRAME Dialog-Frame = TRUE.
+            END.
+            ELSE 
+            DO:
+                MESSAGE "No states found for country:" selectedCountry 
+                    VIEW-AS ALERT-BOX INFO BUTTONS OK.
+                CMB-State:SENSITIVE IN FRAME Dialog-Frame = FALSE.
+            END.
         END.
         ELSE 
         DO:
-            MESSAGE "No states found for country:" selectedCountry VIEW-AS ALERT-BOX INFO BUTTONS OK.
+            MESSAGE "Country not found:" selectedCountry 
+                VIEW-AS ALERT-BOX ERROR BUTTONS OK.
             CMB-State:SENSITIVE IN FRAME Dialog-Frame = FALSE.
         END.
-    END.
-    ELSE 
-    DO:
-        MESSAGE "Country not found:" selectedCountry VIEW-AS ALERT-BOX ERROR BUTTONS OK.
-        CMB-State:SENSITIVE IN FRAME Dialog-Frame = FALSE.
-    END.
-    
-END PROCEDURE.
 
+        CATCH eError AS Progress.Lang.Error:
+            MESSAGE "Error retrieving states: " + eError:GetMessage(1)
+                VIEW-AS ALERT-BOX ERROR.
+            CMB-State:SENSITIVE IN FRAME Dialog-Frame = FALSE.
+        END CATCH.
+    END.    
+    FINALLY:
+        /* Clean up */
+        IF VALID-OBJECT(oController) THEN
+            DELETE OBJECT oController NO-ERROR.
+    END FINALLY.
+
+END PROCEDURE.
 
 
 PROCEDURE populate-cities-by-state:
+    /*------------------------------------------------------------------------
+        Purpose: Populate city combo box filtered by selected state using class method
+        Notes:   Uses Backend.Customer class method with ttCities temp-table
+      ----------------------------------------------------------------------*/
     
-    DEFINE VARIABLE selectedState AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE stateCode     AS CHARACTER NO-UNDO.
-    DEFINE VARIABLE cityList      AS CHARACTER NO-UNDO.
-    
+    DEFINE VARIABLE oController   AS Backend.Customer NO-UNDO.
+    DEFINE VARIABLE selectedState AS CHARACTER        NO-UNDO.
+    DEFINE VARIABLE cityList      AS CHARACTER        NO-UNDO.
+    DEFINE VARIABLE lFound        AS LOGICAL          NO-UNDO.
+    DEFINE VARIABLE iCityCount    AS INTEGER          NO-UNDO INITIAL 0.
+
     /* Get selected state name */
-    selectedState = CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame.
+    selectedState = TRIM(CMB-State:SCREEN-VALUE IN FRAME Dialog-Frame).
     
     /* Clear cities combo box */
     CMB-City:LIST-ITEMS IN FRAME Dialog-Frame = "".
+    CMB-City:SCREEN-VALUE IN FRAME Dialog-Frame = "".
     
-    IF selectedState = "" OR selectedState = ? THEN RETURN.
-    
-    /* Find state record to get state code */
-    FIND FIRST State WHERE State.StateName = selectedState NO-LOCK NO-ERROR.
-    
-    IF AVAILABLE State THEN 
+    /* Validate state selection */
+    IF selectedState = "" OR selectedState = ? THEN 
     DO:
-        stateCode = State.StateCode.
+        CMB-City:SENSITIVE IN FRAME Dialog-Frame = FALSE.
+        RETURN.
+    END.
+
+    /* Clear previous temp-table data */
+    EMPTY TEMP-TABLE ttCities.
+
+    /* Use class method to get cities for selected state */
+    DO ON ERROR UNDO, THROW:
         
-        /* Build city list for the selected state */
-        FOR EACH City WHERE City.StateCode = stateCode NO-LOCK BY City.CityName:
-            IF cityList = "" THEN
-                cityList = City.CityName.
-            ELSE
-                cityList = cityList + "," + City.CityName.
-        END.
-        
-        /* Populate cities combo box */
-        IF cityList <> "" THEN 
+        oController = NEW Backend.Customer().
+        lFound = oController:GetCitiesByStateName(INPUT selectedState, 
+            OUTPUT TABLE ttCities).
+
+        IF lFound THEN 
         DO:
-            CMB-City:LIST-ITEMS IN FRAME Dialog-Frame = cityList.
-            CMB-City:SENSITIVE IN FRAME Dialog-Frame = TRUE.
+            /* Build city list from temp-table (already sorted by name) */
+            FOR EACH ttCities:
+                IF cityList = "" THEN
+                    cityList = ttCities.CityName.
+                ELSE
+                    cityList = cityList + "," + ttCities.CityName.
+                    
+                iCityCount = iCityCount + 1.
+            END.
+
+            /* Populate cities combo box */
+            IF cityList <> "" THEN 
+            DO:
+                CMB-City:LIST-ITEMS IN FRAME Dialog-Frame = cityList.
+                CMB-City:SENSITIVE IN FRAME Dialog-Frame = TRUE.
+            END.
+            ELSE 
+            DO:
+                MESSAGE "No cities found for state:" selectedState 
+                    VIEW-AS ALERT-BOX INFO BUTTONS OK.
+                CMB-City:SENSITIVE IN FRAME Dialog-Frame = FALSE.
+            END.
         END.
         ELSE 
         DO:
-            MESSAGE "No cities found for state:" selectedState VIEW-AS ALERT-BOX INFO BUTTONS OK.
+            MESSAGE "State not found:" selectedState 
+                VIEW-AS ALERT-BOX ERROR BUTTONS OK.
             CMB-City:SENSITIVE IN FRAME Dialog-Frame = FALSE.
         END.
-    END.
-    ELSE 
-    DO:
-        MESSAGE "State not found:" selectedState VIEW-AS ALERT-BOX ERROR BUTTONS OK.
-        CMB-City:SENSITIVE IN FRAME Dialog-Frame = FALSE.
-    END.
-    
+
+        CATCH eError AS Progress.Lang.Error:
+            MESSAGE "Error retrieving cities: " + eError:GetMessage(1)
+                VIEW-AS ALERT-BOX ERROR.
+            CMB-City:SENSITIVE IN FRAME Dialog-Frame = FALSE.
+        END CATCH.
+    END.    
+    FINALLY:
+        /* Clean up */
+        IF VALID-OBJECT(oController) THEN
+            DELETE OBJECT oController NO-ERROR.
+    END FINALLY.
+
 END PROCEDURE.
+
+
 
 
 PROCEDURE update-customer :
@@ -791,7 +1072,6 @@ PROCEDURE populate-marital-status :
     END CATCH.
 
 END PROCEDURE.
-
 
 
 PROCEDURE create-customer :

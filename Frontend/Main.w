@@ -115,130 +115,130 @@ DEFINE VARIABLE C-Win AS WIDGET-HANDLE NO-UNDO.
 
 /* Definitions of the field level widgets                               */
 DEFINE BUTTON BTN-Add 
-    LABEL "Add" 
-    SIZE 10 BY 1.14.
+     LABEL "Add" 
+     SIZE 10 BY 1.14.
 
 DEFINE BUTTON BTN-AddAccount 
-    LABEL "Add Account" 
-    SIZE 16 BY 1.14.
+     LABEL "Add Account" 
+     SIZE 16 BY 1.14.
 
 DEFINE BUTTON BTN-AdvanceSearch 
-    LABEL "Advance Search" 
-    SIZE 16 BY 1.
+     LABEL "Advance Search" 
+     SIZE 16 BY 1.
 
 DEFINE BUTTON BTN-Delete 
-    LABEL "Delete" 
-    SIZE 10 BY 1.14.
+     LABEL "Delete" 
+     SIZE 10 BY 1.14.
 
 DEFINE BUTTON BTN-DeleteAccount 
-    LABEL "Delete Account" 
-    SIZE 16 BY 1.14.
+     LABEL "Delete Account" 
+     SIZE 16 BY 1.14.
 
 DEFINE BUTTON BTN-Search 
-    LABEL "Search" 
-    SIZE 14 BY 1.
+     LABEL "Search" 
+     SIZE 14 BY 1.
 
 DEFINE BUTTON BTN-Update 
-    LABEL "Update" 
-    SIZE 10 BY 1.24.
+     LABEL "Update" 
+     SIZE 10 BY 1.24.
 
 DEFINE BUTTON BTN-UpdateAccount 
-    LABEL "Update Account" 
-    SIZE 16 BY 1.14.
+     LABEL "Update Account" 
+     SIZE 16 BY 1.14.
 
 DEFINE VARIABLE CMB-MaritalStatus AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Marital Status" 
-    VIEW-AS COMBO-BOX INNER-LINES 5
-    LIST-ITEMS "Single","Married" 
-    DROP-DOWN-LIST
-    SIZE 14 BY 1 NO-UNDO.
+     LABEL "Marital Status" 
+     VIEW-AS COMBO-BOX INNER-LINES 5
+     LIST-ITEMS "Single","Married" 
+     DROP-DOWN-LIST
+     SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-Address       AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Address" 
-    VIEW-AS FILL-IN 
-    SIZE 14 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-Address AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Address" 
+     VIEW-AS FILL-IN 
+     SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-Address-2     AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Address 2" 
-    VIEW-AS FILL-IN 
-    SIZE 14 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-Address-2 AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Address 2" 
+     VIEW-AS FILL-IN 
+     SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-City          AS CHARACTER FORMAT "X(256)":U 
-    LABEL "City" 
-    VIEW-AS FILL-IN 
-    SIZE 14 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-City AS CHARACTER FORMAT "X(256)":U 
+     LABEL "City" 
+     VIEW-AS FILL-IN 
+     SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-Country       AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Country" 
-    VIEW-AS FILL-IN 
-    SIZE 14 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-Country AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Country" 
+     VIEW-AS FILL-IN 
+     SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-CustID        AS INTEGER   FORMAT "->,>>>,>>9":U INITIAL 0 
-    LABEL "Customer ID" 
-    VIEW-AS FILL-IN 
-    SIZE 30 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-CustID AS INTEGER FORMAT "->,>>>,>>9":U INITIAL 0 
+     LABEL "Customer ID" 
+     VIEW-AS FILL-IN 
+     SIZE 30 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-FirstName     AS CHARACTER FORMAT "X(256)":U 
-    LABEL "First Name" 
-    VIEW-AS FILL-IN 
-    SIZE 14 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-FirstName AS CHARACTER FORMAT "X(256)":U 
+     LABEL "First Name" 
+     VIEW-AS FILL-IN 
+     SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-LastName      AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Last Name" 
-    VIEW-AS FILL-IN 
-    SIZE 14 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-LastName AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Last Name" 
+     VIEW-AS FILL-IN 
+     SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-PostalCode    AS CHARACTER FORMAT "X(256)":U 
-    LABEL "Postal Code" 
-    VIEW-AS FILL-IN 
-    SIZE 14 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-PostalCode AS CHARACTER FORMAT "X(256)":U 
+     LABEL "Postal Code" 
+     VIEW-AS FILL-IN 
+     SIZE 14 BY 1 NO-UNDO.
 
-DEFINE VARIABLE FLN-State         AS CHARACTER FORMAT "X(256)":U 
-    LABEL "State" 
-    VIEW-AS FILL-IN 
-    SIZE 14 BY 1 NO-UNDO.
+DEFINE VARIABLE FLN-State AS CHARACTER FORMAT "X(256)":U 
+     LABEL "State" 
+     VIEW-AS FILL-IN 
+     SIZE 14 BY 1 NO-UNDO.
 
 DEFINE RECTANGLE RECT-3
-    EDGE-PIXELS 10  NO-FILL   
-    SIZE 104 BY 2.
+     EDGE-PIXELS 10  NO-FILL   
+     SIZE 104 BY 2.
 
 DEFINE RECTANGLE RECT-4
-    EDGE-PIXELS 10  NO-FILL   
-    SIZE 104 BY 9.52.
+     EDGE-PIXELS 10  NO-FILL   
+     SIZE 104 BY 9.52.
 
 DEFINE RECTANGLE RECT-5
-    EDGE-PIXELS 10  NO-FILL   
-    SIZE 13 BY 6.52.
+     EDGE-PIXELS 10  NO-FILL   
+     SIZE 13 BY 6.52.
 
 DEFINE RECTANGLE RECT-6
-    EDGE-PIXELS 10  NO-FILL   
-    SIZE 104 BY 6.52.
+     EDGE-PIXELS 10  NO-FILL   
+     SIZE 104 BY 6.52.
 
 DEFINE RECTANGLE RECT-7
-    EDGE-PIXELS 10  NO-FILL   
-    SIZE 18.8 BY 4.76.
+     EDGE-PIXELS 10  NO-FILL   
+     SIZE 18.8 BY 4.76.
 
 DEFINE VARIABLE TGL-DeselectAll AS LOGICAL INITIAL no 
-    LABEL "Deselect All" 
-    VIEW-AS TOGGLE-BOX
-    SIZE 14 BY .76 NO-UNDO.
+     LABEL "Deselect All" 
+     VIEW-AS TOGGLE-BOX
+     SIZE 14 BY .76 NO-UNDO.
 
-DEFINE VARIABLE TGL-SelectAll   AS LOGICAL INITIAL no 
-    LABEL "Select All" 
-    VIEW-AS TOGGLE-BOX
-    SIZE 11.8 BY .76 NO-UNDO.
+DEFINE VARIABLE TGL-SelectAll AS LOGICAL INITIAL no 
+     LABEL "Select All" 
+     VIEW-AS TOGGLE-BOX
+     SIZE 11.8 BY .76 NO-UNDO.
 
 /* Query definitions                                                    */
 &ANALYZE-SUSPEND
 DEFINE QUERY BRW-AccountInformation FOR 
-    ttAccount SCROLLING.
+      ttAccount SCROLLING.
 &ANALYZE-RESUME
 
 /* Browse definitions                                                   */
 DEFINE BROWSE BRW-AccountInformation
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _DISPLAY-FIELDS BRW-AccountInformation C-Win _FREEFORM
-    QUERY BRW-AccountInformation DISPLAY
-    ttAccount
+  QUERY BRW-AccountInformation DISPLAY
+      ttAccount
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
     WITH NO-ROW-MARKERS SEPARATORS SIZE 74 BY 3.76 FIT-LAST-COLUMN.
@@ -247,45 +247,45 @@ DEFINE BROWSE BRW-AccountInformation
 /* ************************  Frame Definitions  *********************** */
 
 DEFINE FRAME DEFAULT-FRAME
-    FLN-CustID AT ROW 4 COL 29 COLON-ALIGNED WIDGET-ID 26
-    BTN-Search AT ROW 4 COL 77 WIDGET-ID 28
-    BTN-AdvanceSearch AT ROW 4 COL 95 WIDGET-ID 30
-    FLN-FirstName AT ROW 8.24 COL 23 COLON-ALIGNED WIDGET-ID 34
-    FLN-LastName AT ROW 8.24 COL 53 COLON-ALIGNED WIDGET-ID 42
-    CMB-MaritalStatus AT ROW 8.24 COL 83 COLON-ALIGNED WIDGET-ID 50
-    BTN-Add AT ROW 9.48 COL 101 WIDGET-ID 52
-    FLN-Address AT ROW 10.24 COL 23 COLON-ALIGNED WIDGET-ID 36
-    FLN-Address-2 AT ROW 10.24 COL 53 COLON-ALIGNED WIDGET-ID 44
-    BTN-Update AT ROW 11.48 COL 101 WIDGET-ID 54
-    FLN-City AT ROW 12.24 COL 23 COLON-ALIGNED WIDGET-ID 38
-    FLN-State AT ROW 12.24 COL 53 COLON-ALIGNED WIDGET-ID 46
-    BTN-Delete AT ROW 13.71 COL 101 WIDGET-ID 56
-    FLN-Country AT ROW 14.24 COL 23 COLON-ALIGNED WIDGET-ID 40
-    FLN-PostalCode AT ROW 14.24 COL 53 COLON-ALIGNED WIDGET-ID 48
-    TGL-SelectAll AT ROW 18.76 COL 20 WIDGET-ID 70
-    TGL-DeselectAll AT ROW 18.76 COL 34 WIDGET-ID 72
-    BTN-AddAccount AT ROW 19.05 COL 96.4 WIDGET-ID 74
-    BRW-AccountInformation AT ROW 20 COL 16.8 WIDGET-ID 200
-    BTN-UpdateAccount AT ROW 20.57 COL 96.2 WIDGET-ID 76
-    BTN-DeleteAccount AT ROW 22.05 COL 96.2 WIDGET-ID 78
-    "Account Information" VIEW-AS TEXT
-    SIZE 23 BY 1 AT ROW 16.76 COL 54 WIDGET-ID 66
-    FONT 5
-    "Customer Details" VIEW-AS TEXT
-    SIZE 19 BY 1 AT ROW 5.71 COL 56 WIDGET-ID 62
-    FONT 5
-    "CUSTOMER INFORMATION" VIEW-AS TEXT
-    SIZE-PIXELS 264 BY 56 AT Y 8 X 382 WIDGET-ID 24
-    FONT 1
-    RECT-3 AT ROW 3.52 COL 13 WIDGET-ID 32
-    RECT-4 AT ROW 7.24 COL 13 WIDGET-ID 58
-    RECT-5 AT ROW 8.95 COL 100 WIDGET-ID 60
-    RECT-6 AT ROW 18 COL 13 WIDGET-ID 68
-    RECT-7 AT ROW 18.81 COL 95.2 WIDGET-ID 80
+     FLN-CustID AT ROW 4 COL 29 COLON-ALIGNED WIDGET-ID 26
+     BTN-Search AT ROW 4 COL 77 WIDGET-ID 28
+     BTN-AdvanceSearch AT ROW 4 COL 95 WIDGET-ID 30
+     FLN-FirstName AT ROW 8.24 COL 23 COLON-ALIGNED WIDGET-ID 34
+     FLN-LastName AT ROW 8.24 COL 53 COLON-ALIGNED WIDGET-ID 42
+     CMB-MaritalStatus AT ROW 8.24 COL 83 COLON-ALIGNED WIDGET-ID 50
+     BTN-Add AT ROW 9.48 COL 101 WIDGET-ID 52
+     FLN-Address AT ROW 10.24 COL 23 COLON-ALIGNED WIDGET-ID 36
+     FLN-Address-2 AT ROW 10.24 COL 53 COLON-ALIGNED WIDGET-ID 44
+     BTN-Update AT ROW 11.48 COL 101 WIDGET-ID 54
+     FLN-City AT ROW 12.24 COL 23 COLON-ALIGNED WIDGET-ID 38
+     FLN-State AT ROW 12.24 COL 53 COLON-ALIGNED WIDGET-ID 46
+     BTN-Delete AT ROW 13.71 COL 101 WIDGET-ID 56
+     FLN-Country AT ROW 14.24 COL 23 COLON-ALIGNED WIDGET-ID 40
+     FLN-PostalCode AT ROW 14.24 COL 53 COLON-ALIGNED WIDGET-ID 48
+     TGL-SelectAll AT ROW 18.76 COL 20 WIDGET-ID 70
+     TGL-DeselectAll AT ROW 18.76 COL 34 WIDGET-ID 72
+     BTN-AddAccount AT ROW 19.05 COL 96.4 WIDGET-ID 74
+     BRW-AccountInformation AT ROW 20 COL 16.8 WIDGET-ID 200
+     BTN-UpdateAccount AT ROW 20.57 COL 96.2 WIDGET-ID 76
+     BTN-DeleteAccount AT ROW 22.05 COL 96.2 WIDGET-ID 78
+     "Account Information" VIEW-AS TEXT
+          SIZE 23 BY 1 AT ROW 16.76 COL 54 WIDGET-ID 66
+          FONT 5
+     "CUSTOMER INFORMATION" VIEW-AS TEXT
+          SIZE-PIXELS 264 BY 56 AT Y 8 X 382 WIDGET-ID 24
+          FONT 1
+     "Customer Details" VIEW-AS TEXT
+          SIZE 19 BY 1 AT ROW 5.71 COL 56 WIDGET-ID 62
+          FONT 5
+     RECT-3 AT ROW 3.52 COL 13 WIDGET-ID 32
+     RECT-4 AT ROW 7.24 COL 13 WIDGET-ID 58
+     RECT-5 AT ROW 8.95 COL 100 WIDGET-ID 60
+     RECT-6 AT ROW 18 COL 13 WIDGET-ID 68
+     RECT-7 AT ROW 18.81 COL 95.2 WIDGET-ID 80
     WITH 1 DOWN NO-BOX KEEP-TAB-ORDER OVERLAY 
-    SIDE-LABELS NO-UNDERLINE THREE-D 
-    AT COLUMN 1 ROW 1
-    SIZE 129.13 BY 24 WIDGET-ID 100.
+         SIDE-LABELS NO-UNDERLINE THREE-D 
+         AT COLUMN 1 ROW 1
+         SIZE 138 BY 25.29 WIDGET-ID 100.
 
 
 /* *********************** Procedure Settings ************************ */
@@ -302,24 +302,24 @@ DEFINE FRAME DEFAULT-FRAME
 
 &ANALYZE-SUSPEND _CREATE-WINDOW
 IF SESSION:DISPLAY-TYPE = "GUI":U THEN
-    CREATE WINDOW C-Win ASSIGN
-        HIDDEN             = YES
-        TITLE              = "<insert window title>"
-        HEIGHT             = 24
-        WIDTH              = 129.2
-        MAX-HEIGHT         = 24.57
-        MAX-WIDTH          = 155.8
-        VIRTUAL-HEIGHT     = 24.57
-        VIRTUAL-WIDTH      = 155.8
-        RESIZE             = yes
-        SCROLL-BARS        = no
-        STATUS-AREA        = no
-        BGCOLOR            = ?
-        FGCOLOR            = ?
-        KEEP-FRAME-Z-ORDER = yes
-        THREE-D            = yes
-        MESSAGE-AREA       = no
-        SENSITIVE          = yes.
+  CREATE WINDOW C-Win ASSIGN
+         HIDDEN             = YES
+         TITLE              = "<insert window title>"
+         HEIGHT             = 25.29
+         WIDTH              = 138
+         MAX-HEIGHT         = 25.29
+         MAX-WIDTH          = 155.8
+         VIRTUAL-HEIGHT     = 25.29
+         VIRTUAL-WIDTH      = 155.8
+         RESIZE             = yes
+         SCROLL-BARS        = no
+         STATUS-AREA        = no
+         BGCOLOR            = ?
+         FGCOLOR            = ?
+         KEEP-FRAME-Z-ORDER = yes
+         THREE-D            = yes
+         MESSAGE-AREA       = no
+         SENSITIVE          = yes.
 ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
 /* END WINDOW DEFINITION                                                */
 &ANALYZE-RESUME
@@ -353,7 +353,7 @@ ELSE {&WINDOW-NAME} = CURRENT-WINDOW.
 /* SETTINGS FOR FILL-IN FLN-State IN FRAME DEFAULT-FRAME
    NO-ENABLE                                                            */
 IF SESSION:DISPLAY-TYPE = "GUI":U AND VALID-HANDLE(C-Win)
-    THEN C-Win:HIDDEN = no.
+THEN C-Win:HIDDEN = no.
 
 /* _RUN-TIME-ATTRIBUTES-END */
 &ANALYZE-RESUME
@@ -379,7 +379,7 @@ OPEN QUERY {&SELF-NAME} FOR EACH ttAccount.
 &Scoped-define SELF-NAME C-Win
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL C-Win C-Win
 ON END-ERROR OF C-Win /* <insert window title> */
-    OR ENDKEY OF {&WINDOW-NAME} ANYWHERE 
+OR ENDKEY OF {&WINDOW-NAME} ANYWHERE 
     DO:
         /* This case occurs when the user presses the "Esc" key.
            In a persistently run window, just ignore this.  If we did not, the
@@ -393,7 +393,7 @@ ON END-ERROR OF C-Win /* <insert window title> */
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL C-Win C-Win
 ON WINDOW-CLOSE OF C-Win /* <insert window title> */
-    DO:
+DO:
         /* This event will close the window and terminate the procedure.  */
         APPLY "CLOSE":U TO THIS-PROCEDURE.
         RETURN NO-APPLY.
@@ -406,11 +406,9 @@ ON WINDOW-CLOSE OF C-Win /* <insert window title> */
 &Scoped-define SELF-NAME BTN-Add
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Add C-Win
 ON CHOOSE OF BTN-Add IN FRAME DEFAULT-FRAME /* Add */
-    DO:
+DO:
         RUN Add_Update_Customer.w (INPUT 0, INPUT "Add").
     END.
-
-
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
@@ -419,7 +417,7 @@ ON CHOOSE OF BTN-Add IN FRAME DEFAULT-FRAME /* Add */
 &Scoped-define SELF-NAME BTN-AddAccount
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-AddAccount C-Win
 ON CHOOSE OF BTN-AddAccount IN FRAME DEFAULT-FRAME /* Add Account */
-    DO:
+DO:
         DEFINE VARIABLE iCustID    AS INTEGER NO-UNDO.
         DEFINE VARIABLE iAccountID AS INTEGER NO-UNDO.
 
@@ -452,7 +450,7 @@ ON CHOOSE OF BTN-AddAccount IN FRAME DEFAULT-FRAME /* Add Account */
 &Scoped-define SELF-NAME BTN-AdvanceSearch
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-AdvanceSearch C-Win
 ON CHOOSE OF BTN-AdvanceSearch IN FRAME DEFAULT-FRAME /* Advance Search */
-    DO:
+DO:
         DEFINE VARIABLE iCustID AS INTEGER NO-UNDO.
 
         /* Run Customer Filler dialog for search */
@@ -475,7 +473,7 @@ ON CHOOSE OF BTN-AdvanceSearch IN FRAME DEFAULT-FRAME /* Advance Search */
 &Scoped-define SELF-NAME BTN-Delete
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Delete C-Win
 ON CHOOSE OF BTN-Delete IN FRAME DEFAULT-FRAME /* Delete */
-    DO:
+DO:
         DEFINE VARIABLE iSelectedCustomerId AS INTEGER NO-UNDO.
         DEFINE VARIABLE lDeleteResult       AS LOGICAL NO-UNDO.
 
@@ -510,7 +508,7 @@ ON CHOOSE OF BTN-Delete IN FRAME DEFAULT-FRAME /* Delete */
 &Scoped-define SELF-NAME BTN-Search
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Search C-Win
 ON CHOOSE OF BTN-Search IN FRAME DEFAULT-FRAME /* Search */
-    DO: 
+DO: 
         RUN Search_Customer.
     END.
 
@@ -521,12 +519,24 @@ ON CHOOSE OF BTN-Search IN FRAME DEFAULT-FRAME /* Search */
 &Scoped-define SELF-NAME BTN-Update
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Update C-Win
 ON CHOOSE OF BTN-Update IN FRAME DEFAULT-FRAME /* Update */
-    DO:
+DO:
         RUN Add_Update_Customer.w (INPUT INTEGER(FLN-CustID:SCREEN-VALUE), INPUT "Update").
     END.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
+
+
+&Scoped-define SELF-NAME FLN-City
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL FLN-City C-Win
+ON LEAVE OF FLN-City IN FRAME DEFAULT-FRAME /* City */
+DO:
+  
+END.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
 
 
 &Scoped-define BROWSE-NAME BRW-AccountInformation
@@ -558,7 +568,6 @@ DO ON ERROR   UNDO MAIN-BLOCK, LEAVE MAIN-BLOCK
     IF NOT THIS-PROCEDURE:PERSISTENT THEN
         WAIT-FOR CLOSE OF THIS-PROCEDURE.
 END.
-
 
 
 
@@ -609,18 +618,18 @@ END PROCEDURE.
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE disable_UI C-Win  _DEFAULT-DISABLE
 PROCEDURE disable_UI :
-    /*------------------------------------------------------------------------------
-      Purpose:     DISABLE the User Interface
-      Parameters:  <none>
-      Notes:       Here we clean-up the user-interface by deleting
-                   dynamic widgets we have created and/or hide 
-                   frames.  This procedure is usually called when
-                   we are ready to "clean-up" after running.
-    ------------------------------------------------------------------------------*/
-    /* Delete the WINDOW we created */
-    IF SESSION:DISPLAY-TYPE = "GUI":U AND VALID-HANDLE(C-Win)
-        THEN DELETE WIDGET C-Win.
-    IF THIS-PROCEDURE:PERSISTENT THEN DELETE PROCEDURE THIS-PROCEDURE.
+/*------------------------------------------------------------------------------
+  Purpose:     DISABLE the User Interface
+  Parameters:  <none>
+  Notes:       Here we clean-up the user-interface by deleting
+               dynamic widgets we have created and/or hide 
+               frames.  This procedure is usually called when
+               we are ready to "clean-up" after running.
+------------------------------------------------------------------------------*/
+  /* Delete the WINDOW we created */
+  IF SESSION:DISPLAY-TYPE = "GUI":U AND VALID-HANDLE(C-Win)
+  THEN DELETE WIDGET C-Win.
+  IF THIS-PROCEDURE:PERSISTENT THEN DELETE PROCEDURE THIS-PROCEDURE.
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
@@ -628,26 +637,26 @@ END PROCEDURE.
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE enable_UI C-Win  _DEFAULT-ENABLE
 PROCEDURE enable_UI :
-    /*------------------------------------------------------------------------------
-      Purpose:     ENABLE the User Interface
-      Parameters:  <none>
-      Notes:       Here we display/view/enable the widgets in the
-                   user-interface.  In addition, OPEN all queries
-                   associated with each FRAME and BROWSE.
-                   These statements here are based on the "Other 
-                   Settings" section of the widget Property Sheets.
-    ------------------------------------------------------------------------------*/
-    DISPLAY FLN-CustID FLN-FirstName FLN-LastName CMB-MaritalStatus FLN-Address 
-        FLN-Address-2 FLN-City FLN-State FLN-Country FLN-PostalCode 
-        TGL-SelectAll TGL-DeselectAll 
-        WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
-    ENABLE RECT-3 RECT-4 RECT-5 RECT-6 RECT-7 FLN-CustID BTN-Search 
-        BTN-AdvanceSearch BTN-Add BTN-Update BTN-Delete TGL-SelectAll 
-        TGL-DeselectAll BTN-AddAccount BRW-AccountInformation 
-        BTN-UpdateAccount BTN-DeleteAccount 
-        WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
-    {&OPEN-BROWSERS-IN-QUERY-DEFAULT-FRAME}
-    VIEW C-Win.
+/*------------------------------------------------------------------------------
+  Purpose:     ENABLE the User Interface
+  Parameters:  <none>
+  Notes:       Here we display/view/enable the widgets in the
+               user-interface.  In addition, OPEN all queries
+               associated with each FRAME and BROWSE.
+               These statements here are based on the "Other 
+               Settings" section of the widget Property Sheets.
+------------------------------------------------------------------------------*/
+  DISPLAY FLN-CustID FLN-FirstName FLN-LastName CMB-MaritalStatus FLN-Address 
+          FLN-Address-2 FLN-City FLN-State FLN-Country FLN-PostalCode 
+          TGL-SelectAll TGL-DeselectAll 
+      WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
+  ENABLE RECT-3 RECT-4 RECT-5 RECT-6 RECT-7 FLN-CustID BTN-Search 
+         BTN-AdvanceSearch BTN-Add BTN-Update BTN-Delete TGL-SelectAll 
+         TGL-DeselectAll BTN-AddAccount BRW-AccountInformation 
+         BTN-UpdateAccount BTN-DeleteAccount 
+      WITH FRAME DEFAULT-FRAME IN WINDOW C-Win.
+  {&OPEN-BROWSERS-IN-QUERY-DEFAULT-FRAME}
+  VIEW C-Win.
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
@@ -655,7 +664,7 @@ END PROCEDURE.
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE FillCustomerData C-Win 
 PROCEDURE FillCustomerData :
-    /*------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
              Purpose:
              Notes:
             ------------------------------------------------------------------------------*/
@@ -746,7 +755,7 @@ END PROCEDURE.
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE Search_Customer C-Win 
 PROCEDURE Search_Customer :
-    /*------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
              Purpose:
              Notes:
             ------------------------------------------------------------------------------*/
