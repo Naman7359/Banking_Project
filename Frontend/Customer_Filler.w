@@ -355,17 +355,14 @@ PROCEDURE enable_UI :
     {&OPEN-BROWSERS-IN-QUERY-Dialog-Frame}
 END PROCEDURE.
 
-/* _UIB-CODE-BLOCK-END */
-&ANALYZE-RESUME
-
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE runCustomerSearch Dialog-Frame 
-PROCEDURE runCustomerSearch :
-    DEFINE VARIABLE oSearch  AS CLASS             Customer NO-UNDO.
-    DEFINE VARIABLE lcResult AS LONGCHAR          NO-UNDO.
-    DEFINE VARIABLE oParser  AS ObjectModelParser NO-UNDO.
-    DEFINE VARIABLE oArray   AS JsonArray         NO-UNDO.
-    DEFINE VARIABLE oCust    AS JsonObject        NO-UNDO.
-    DEFINE VARIABLE i        AS INTEGER           NO-UNDO.
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE runCustomerSearch Dialog-Frame
+PROCEDURE runCustomerSearch:
+    DEFINE VARIABLE oSearch   AS Backend.Customer NO-UNDO.
+    DEFINE VARIABLE lcResult  AS LONGCHAR NO-UNDO.
+    DEFINE VARIABLE oParser   AS ObjectModelParser NO-UNDO.
+    DEFINE VARIABLE oArray    AS JsonArray NO-UNDO.
+    DEFINE VARIABLE oCust     AS JsonObject NO-UNDO.
+    DEFINE VARIABLE i         AS INTEGER NO-UNDO.
 
     /* Clear previous search results */
     EMPTY TEMP-TABLE ttCustomer.
@@ -382,8 +379,8 @@ PROCEDURE runCustomerSearch :
         cPhone     = FLN-Phone:SCREEN-VALUE IN FRAME Dialog-Frame
         cEmail     = FLN-Email:SCREEN-VALUE IN FRAME Dialog-Frame.
 
-    /* Call backend search method */
-    oSearch  = NEW Customer().
+    /* Call backend search class */
+    oSearch  = NEW Backend.Customer().
     lcResult = oSearch:searchCustomers(
         INPUT cFirstName,
         INPUT cLastName,
