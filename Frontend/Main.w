@@ -241,7 +241,7 @@ DEFINE BROWSE BRW-AccountInformation
       ttAccount
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
-    WITH NO-ROW-MARKERS SEPARATORS SIZE 74 BY 3.76 FIT-LAST-COLUMN.
+    WITH NO-ROW-MARKERS SEPARATORS SIZE 74 BY 3.75 FIT-LAST-COLUMN.
 
 
 /* ************************  Frame Definitions  *********************** */
@@ -432,8 +432,9 @@ DO:
 
         /* Run dialog */
         RUN Add_Account.w(
-            INPUT iCustID,        /* customer ID */
-            OUTPUT iAccountID     /* newly created account ID */
+            INPUT iCustID,    
+            OUTPUT iAccountID,    /* customer ID */
+            INPUT "ADD"     /* newly created account ID */
             ).
 
         /* Refresh Accounts browse if an account was created */
@@ -453,16 +454,19 @@ ON CHOOSE OF BTN-AdvanceSearch IN FRAME DEFAULT-FRAME /* Advance Search */
 DO:
         DEFINE VARIABLE iCustID AS INTEGER NO-UNDO.
 
-        /* Run Customer Filler dialog for search */
-        RUN Customer_Filler.w (
-            OUTPUT iCustID
-            ).
+        /* Open Customer Filter dialog and get selected CustID */
+        RUN Customer_Filler.w (OUTPUT iCustID).  
 
-        /* If a customer was selected, fill the Customer ID and trigger search */
-        IF iCustID > 0 THEN 
+        /* If a customer was selected, populate fields and trigger Search */
+        IF iCustID <> 0 THEN 
         DO:
             FLN-CustID:SCREEN-VALUE = STRING(iCustID).
-            APPLY "CHOOSE" TO BTN-Search.
+
+            /* Trigger Search button logic to fill main form fields */
+            APPLY "CHOOSE" TO BTN-Search IN FRAME DEFAULT-FRAME.
+
+        /* Load Orders and Order Lines for the selected customer */
+        /*        RUN Load_Orders(iCustID).*/
         END.
     END.
 
@@ -527,18 +531,43 @@ DO:
 &ANALYZE-RESUME
 
 
-&Scoped-define SELF-NAME FLN-City
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL FLN-City C-Win
-ON LEAVE OF FLN-City IN FRAME DEFAULT-FRAME /* City */
-DO:
-  
-END.
+&Scoped-define SELF-NAME BTN-UpdateAccount
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-UpdateAccount C-Win
+ON CHOOSE OF BTN-UpdateAccount IN FRAME DEFAULT-FRAME /* Update Account */
+    DO:
+        DEFINE VARIABLE iSelectedAccountID AS INTEGER   NO-UNDO.
+        DEFINE VARIABLE cAction            AS CHARACTER NO-UNDO.
+        DEFINE VARIABLE iAccountId         AS INTEGER   NO-UNDO.
+        /* Make sure a row is selected in the browse (ttAccount is query buffer) */
+        IF AVAILABLE ttAccount THEN 
+        DO:
+            /* Get selected AccountID */
+            iSelectedAccountID = ttAccount.AcctNum.
+
+            /* Set action to UPDATE */
+            cAction = "UPDATE".
+
+            /* Open Add_Account dialog in UPDATE mode, passing AccountID and cAction */
+            RUN Add_Account.w (
+                INPUT iSelectedAccountID,
+                OUTPUT iAccountId,
+                INPUT cAction
+                ).
+        END.
+        ELSE 
+        DO:
+            MESSAGE "Please select an account to update." VIEW-AS ALERT-BOX INFO.
+        END.
+    END.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/naman
 &Scoped-define BROWSE-NAME BRW-AccountInformation
 &UNDEFINE SELF-NAME
 
@@ -664,7 +693,7 @@ END PROCEDURE.
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE FillCustomerData C-Win 
 PROCEDURE FillCustomerData :
-/*------------------------------------------------------------------------------
+    /*------------------------------------------------------------------------------
              Purpose:
              Notes:
             ------------------------------------------------------------------------------*/
@@ -753,12 +782,15 @@ END PROCEDURE.
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE Load_Orders C-Win 
+PROCEDURE Load_Orders :
+END PROCEDURE.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE Search_Customer C-Win 
 PROCEDURE Search_Customer :
-/*------------------------------------------------------------------------------
-             Purpose:
-             Notes:
-            ------------------------------------------------------------------------------*/
 
     DEFINE VARIABLE oCustomer AS Backend.Customer NO-UNDO.
     DEFINE VARIABLE lcRes     AS LONGCHAR         NO-UNDO.

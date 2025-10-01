@@ -21,13 +21,13 @@
 ------------------------------------------------------------------------*/
 /*          This .W file was created with the Progress AppBuilder.       */
 /*----------------------------------------------------------------------*/
-
+USING Progress.Json.ObjectModel.*.
 /* ***************************  Definitions  ************************** */
 
 /* Parameters Definitions ---                                           */
-DEFINE INPUT  PARAMETER iCustID    AS INTEGER NO-UNDO.
+DEFINE INPUT  PARAMETER iId    AS INTEGER NO-UNDO.
 DEFINE OUTPUT PARAMETER iAccountID AS INTEGER NO-UNDO.
-
+DEFINE INPUT PARAMETER cAction AS CHARACTER NO-UNDO.
 /* Local Variable Definitions ---                                       */
 DEFINE TEMP-TABLE ttAccount NO-UNDO
     FIELD AccountID   AS INTEGER
@@ -119,7 +119,7 @@ DEFINE VARIABLE CMB-LoanDuration AS CHARACTER FORMAT "X(256)":U
      VIEW-AS COMBO-BOX INNER-LINES 5
      LIST-ITEMS "1","2","3","4","5","6","7" 
      DROP-DOWN-LIST
-     SIZE 16 BY .88 NO-UNDO.
+     SIZE 16 BY 1 NO-UNDO.
 
 DEFINE VARIABLE FLN-IFSC-Code-Loan AS CHARACTER FORMAT "X(256)":U 
      LABEL "IFSC Code" 
@@ -180,8 +180,8 @@ DEFINE RECTANGLE RECT-12
 /* ************************  Frame Definitions  *********************** */
 
 DEFINE FRAME Dialog-Frame
-     CMB-SelectAccountType AT ROW 2 COL 46 COLON-ALIGNED WIDGET-ID 4
-     SPACE(26.99) SKIP(20.36)
+     CMB-SelectAccountType AT ROW 2 COL 22 COLON-ALIGNED WIDGET-ID 4
+     SPACE(50.99) SKIP(20.54)
     WITH VIEW-AS DIALOG-BOX KEEP-TAB-ORDER 
          SIDE-LABELS NO-UNDERLINE THREE-D  SCROLLABLE 
          TITLE "<insert dialog title>" WIDGET-ID 100.
@@ -200,7 +200,7 @@ DEFINE FRAME FRM-LoanAccount
          SIDE-LABELS NO-UNDERLINE THREE-D 
          AT COLUMN 4 ROW 13
          SIZE 80 BY 9.5
-         TITLE "Add Loan Account" WIDGET-ID 300.
+         TITLE "Loan Account" WIDGET-ID 300.
 
 DEFINE FRAME FRM-SavingAccount
      CMB-AccountType-Savings AT ROW 2 COL 17 COLON-ALIGNED WIDGET-ID 2
@@ -214,7 +214,7 @@ DEFINE FRAME FRM-SavingAccount
          SIDE-LABELS NO-UNDERLINE THREE-D 
          AT COLUMN 4 ROW 4
          SIZE 80 BY 8.25
-         TITLE "Add Savings Account" WIDGET-ID 200.
+         TITLE "Savings Account" WIDGET-ID 200.
 
 
 /* *********************** Procedure Settings ************************ */
@@ -366,27 +366,36 @@ RUN disable_UI.
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE CreateLoanAccountInternal Dialog-Frame 
 PROCEDURE CreateLoanAccountInternal :
-/*------------------------------------------------------------------------------
-     Purpose:
-     Notes:
-    ------------------------------------------------------------------------------*/
     DEFINE VARIABLE iNextAccID AS INTEGER NO-UNDO.
-    DEFINE VARIABLE oAccounts  AS CLASS Accounts NO-UNDO.
+    DEFINE VARIABLE oAccounts  AS Accounts NO-UNDO.
 
-    /* create object */
     oAccounts = NEW Accounts().
 
-    /* call method */
-    oAccounts:CreateLoanAccount(
-        iCustID,
-        FLN-IFSC-Code-Loan:SCREEN-VALUE IN FRAME FRM-LoanAccount,
-        INTEGER(FLN-TotalLoanAmmount:SCREEN-VALUE),
-        INTEGER(FLN-RateOfIntrest:SCREEN-VALUE),
-        INTEGER(CMB-LoanDuration:SCREEN-VALUE),
-        OUTPUT iNextAccID
-    ).
-
-    MESSAGE "Loan Account created successfully, ID: " iNextAccID VIEW-AS ALERT-BOX INFO.
+    IF cAction = "ADD" THEN 
+    DO:
+        /* Call backend class method to create new loan account */
+        oAccounts:CreateLoanAccount(
+            INPUT iId,
+            INPUT FLN-IFSC-Code-Loan:SCREEN-VALUE IN FRAME FRM-LoanAccount,
+            INPUT INTEGER(FLN-TotalLoanAmmount:SCREEN-VALUE),
+            INPUT INTEGER(FLN-RateOfIntrest:SCREEN-VALUE),
+            INPUT INTEGER(CMB-LoanDuration:SCREEN-VALUE),
+            OUTPUT iNextAccID
+        ).
+        MESSAGE "Loan Account created successfully, ID: " iNextAccID VIEW-AS ALERT-BOX INFO.
+    END.
+    ELSE IF cAction = "UPDATE" THEN 
+    DO:
+        /* Call backend method to update existing loan account */
+        oAccounts:UpdateLoanAccount(
+            INPUT iId,
+            INPUT INTEGER (FLN-IFSC-Code-Loan:SCREEN-VALUE IN FRAME FRM-LoanAccount),
+            INPUT INTEGER(FLN-TotalLoanAmmount:SCREEN-VALUE),
+            INPUT INTEGER(FLN-RateOfIntrest:SCREEN-VALUE),
+            INPUT INTEGER(CMB-LoanDuration:SCREEN-VALUE)
+        ).
+        MESSAGE "Loan Account updated successfully, ID: " iAccountID VIEW-AS ALERT-BOX INFO.
+    END.
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
@@ -394,24 +403,30 @@ END PROCEDURE.
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE CreateSavingsAccountInternal Dialog-Frame 
 PROCEDURE CreateSavingsAccountInternal :
-/*------------------------------------------------------------------------------
-     Purpose:
-     Notes:
-    ------------------------------------------------------------------------------*/
     DEFINE VARIABLE iNextAccountID AS INTEGER  NO-UNDO.
     DEFINE VARIABLE oAccounts      AS Accounts NO-UNDO. 
+
     oAccounts = NEW Accounts().
-  
-    /* Call backend class method */
-    oAccounts:CreateSavingsAccount(
-        INPUT iCustID,
-        INPUT FLN-IFSC-Code-Savings:SCREEN-VALUE in FRAme FRM-SavingAccount,
-        INPUT INTEGER(FLN-TransferLimit:SCREEN-VALUE),
-        output iNextAccountID).
 
-    MESSAGE "Savings Account created successfully, ID: " iNextAccountID VIEW-AS ALERT-BOX INFO.
-
-
+    IF cAction = "ADD" THEN 
+    DO:
+        oAccounts:CreateSavingsAccount(
+            INPUT iId,
+            INPUT FLN-IFSC-Code-Savings:SCREEN-VALUE IN FRAME FRM-SavingAccount,
+            INPUT INTEGER(FLN-TransferLimit:SCREEN-VALUE),
+            OUTPUT iNextAccountID
+        ).
+        MESSAGE "Savings Account created successfully, ID: " iNextAccountID VIEW-AS ALERT-BOX INFO.
+    END.
+    ELSE IF cAction = "UPDATE" THEN 
+    DO:
+        oAccounts:UpdateSavingsAccount(
+            INPUT iId,
+            INPUT FLN-IFSC-Code-Savings:SCREEN-VALUE IN FRAME FRM-SavingAccount,
+            INPUT INTEGER(FLN-TransferLimit:SCREEN-VALUE)
+        ).
+        MESSAGE "Savings Account updated successfully, ID: " iAccountID VIEW-AS ALERT-BOX INFO.
+    END.
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */
@@ -467,6 +482,56 @@ PROCEDURE enable_UI :
          FLN-TotalLoanAmmount FLN-RateOfIntrest BTN-Create-Loan BTN-Cancel-Loan 
       WITH FRAME FRM-LoanAccount.
   {&OPEN-BROWSERS-IN-QUERY-FRM-LoanAccount}
+END PROCEDURE.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE LoadAccountDetails Dialog-Frame 
+PROCEDURE LoadAccountDetails :
+DEFINE INPUT PARAMETER cJSONData AS LONGCHAR NO-UNDO.
+    DEFINE VARIABLE oParser   AS ObjectModelParser NO-UNDO.
+    DEFINE VARIABLE oJsonObj  AS JsonObject        NO-UNDO.
+    DEFINE VARIABLE iAcctType AS INTEGER           NO-UNDO.
+
+    /* Parse JSON */
+    oParser  = NEW ObjectModelParser().
+    oJsonObj = CAST(oParser:Parse(cJSONData), JsonObject).
+
+    /* Read AccountType */
+    iAcctType = oJsonObj:GetInteger("AccountTypeId"). /* 1=Savings, 2=Loan */
+
+    /* Populate common fields */
+    IF iAcctType = 1 THEN
+        CMB-SelectAccountType:SCREEN-VALUE IN FRAME Dialog-Frame = "SAVINGS".
+    ELSE IF iAcctType = 2 THEN
+            CMB-SelectAccountType:SCREEN-VALUE IN FRAME Dialog-Frame = "LOAN".
+
+    /* Populate Savings frame if account type = 1 */
+    IF iAcctType = 1 THEN 
+    DO:
+        ENABLE ALL WITH FRAME FRM-SavingAccount.
+        DISABLE ALL WITH FRAME FRM-LoanAccount.
+
+        FLN-IFSC-Code-Savings:SCREEN-VALUE IN FRAME FRM-SavingAccount = oJsonObj:GetCharacter("BranchCode").
+        FLN-TransferLimit:SCREEN-VALUE IN FRAME FRM-SavingAccount  = STRING(oJsonObj:GetDecimal("Transfer_limit")).
+    END.
+
+    /* Populate Loan frame if account type = 2 */
+    IF iAcctType = 2 THEN 
+    DO:
+        ENABLE ALL WITH FRAME FRM-LoanAccount.
+        DISABLE ALL WITH FRAME FRM-SavingAccount.
+
+        FLN-IFSC-Code-Loan:SCREEN-VALUE IN FRAME FRM-LoanAccount       = STRING(oJsonObj:GetInteger("BranchCode")).
+        FLN-TotalLoanAmmount:SCREEN-VALUE IN FRAME FRM-LoanAccount     = STRING(oJsonObj:GetDecimal("TotalLoanAmount")).
+        FLN-RateOfIntrest:SCREEN-VALUE IN FRAME FRM-LoanAccount        = STRING(oJsonObj:GetDecimal("RateOfIntrest")).
+        CMB-LoanDuration:SCREEN-VALUE IN FRAME FRM-LoanAccount         = STRING(oJsonObj:GetInteger("LoanTenure")).
+    END.
+
+    /* Clean up */
+    DELETE OBJECT oJsonObj NO-ERROR.
+    DELETE OBJECT oParser  NO-ERROR.
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */

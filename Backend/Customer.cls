@@ -36,7 +36,9 @@ CLASS Backend.Customer:
                 ttCustomerDetails.postal_code    = CustomerDetails.ZipCode
                 ttCustomerDetails.Country        = CustomerDetails.Country
                 ttCustomerDetails.email          = CustomerDetails.EmailId
-                ttCustomerDetails.mobile_num     = CustomerDetails.Phone.
+                ttCustomerDetails.Phone_num     = CustomerDetails.Phone.
+            /*                ttCustomerDetails.date_created = CustomerDetails*/
+            /*                ttCustomerDetails.date_modified = CustomerDetails.date_modified.*/
             RETURN TRUE.
         END.
         RETURN FALSE.
@@ -68,7 +70,9 @@ CLASS Backend.Customer:
                     CustomerDetails.ZipCode       = ttCustomerDetails.postal_code
                     CustomerDetails.Country       = ttCustomerDetails.Country
                     CustomerDetails.EmailId       = ttCustomerDetails.email
-                    CustomerDetails.Phone         = ttCustomerDetails.mobile_num.
+                    CustomerDetails.Phone         = ttCustomerDetails.Phone_num.
+                /*                    CustomerDetails.date_created = TODAY*/
+                /*                    CustomerDetails.date_modified = TODAY.*/
                 
                 ttCustomerDetails.CustID = CustomerDetails.CustID.
                 lSuccess = TRUE.
@@ -82,51 +86,26 @@ CLASS Backend.Customer:
     
     METHOD PUBLIC LOGICAL UpdateCustomerDetails(INPUT TABLE ttCustomerDetails):
         DEFINE VARIABLE lSuccess AS LOGICAL NO-UNDO INITIAL FALSE.
-        DO ON ERROR UNDO, THROW:
-            
-            FIND FIRST ttCustomerDetails NO-LOCK NO-ERROR.
-            IF AVAILABLE ttCustomerDetails THEN 
-            DO:
-                                    
-                DO TRANSACTION ON ERROR UNDO,THROW:
-                    FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = ttCustomerDetails.CustID EXCLUSIVE-LOCK NO-ERROR.
-                    IF AVAILABLE CustomerDetails THEN 
-              
-                    DO:
-                        MESSAGE "in transaction".
-                        ASSIGN 
-                            CustomerDetails.FirstName     = ttCustomerDetails.FirstName
-                            CustomerDetails.LastName      = ttCustomerDetails.LastName
-                            CustomerDetails.DOB           = ttCustomerDetails.date_of_birth
-                            CustomerDetails.MaritalStatus = ttCustomerDetails.marital_status
-                            CustomerDetails.Address1      = ttCustomerDetails.address
-                            CustomerDetails.Address2      = ttCustomerDetails.address_2
-                            CustomerDetails.City          = ttCustomerDetails.City
-                            CustomerDetails.State         = ttCustomerDetails.State
-                            CustomerDetails.ZipCode       = ttCustomerDetails.postal_code
-                            CustomerDetails.Country       = ttCustomerDetails.Country
-                            CustomerDetails.EmailId       = ttCustomerDetails.email
-                            CustomerDetails.Phone         = ttCustomerDetails.mobile_num
-                            lSuccess                      = TRUE.
-                            
-                            
-                        MESSAGE "UPDATE SUCCESSFUL!" SKIP(2)
-                            "Updated Customer Details:" SKIP
-                            "================================" SKIP
-                            "Customer ID:" CustomerDetails.CustID SKIP
-                            "Name:" CustomerDetails.FirstName CustomerDetails.LastName SKIP
-                            "Date of Birth:" CustomerDetails.DOB SKIP
-                            "Marital Status:" CustomerDetails.MaritalStatus SKIP
-                            "Address:" CustomerDetails.Address1 SKIP
-                            "Address 2:" CustomerDetails.Address2 SKIP
-                            "City:" CustomerDetails.City SKIP
-                            "State:" CustomerDetails.State SKIP
-                            "Postal Code:" CustomerDetails.ZipCode SKIP
-                            "Country:" CustomerDetails.Country SKIP
-                            "Email:" CustomerDetails.EmailId SKIP
-                            "Phone:" CustomerDetails.Phone
-                            VIEW-AS ALERT-BOX INFO BUTTONS OK.
-                    END.
+        
+        DO TRANSACTION ON ERROR UNDO,THROW:
+            FOR EACH ttCustomerDetails:
+                FIND FIRST CustomerDetails WHERE CustomerDetails.CustID = ttCustomerDetails.CustID EXCLUSIVE-LOCK NO-ERROR.
+                IF AVAILABLE CustomerDetails THEN 
+                DO:
+                    ASSIGN 
+                        CustomerDetails.FirstName     = ttCustomerDetails.FirstName
+                        CustomerDetails.LastName      = ttCustomerDetails.LastName
+                        CustomerDetails.DOB           = ttCustomerDetails.date_of_birth
+                        CustomerDetails.MaritalStatus = ttCustomerDetails.marital_status
+                        CustomerDetails.Address1      = ttCustomerDetails.address
+                        CustomerDetails.Address2      = ttCustomerDetails.address_2
+                        CustomerDetails.City          = ttCustomerDetails.City
+                        CustomerDetails.State         = ttCustomerDetails.State
+                        CustomerDetails.ZipCode       = ttCustomerDetails.postal_code
+                        CustomerDetails.Country       = ttCustomerDetails.Country
+                        CustomerDetails.EmailId       = ttCustomerDetails.email
+                        CustomerDetails.Phone         = ttCustomerDetails.Phone_num
+                        lSuccess                      = TRUE.
                 END.
             END.
         
@@ -178,7 +157,7 @@ CLASS Backend.Customer:
                 ttCustomerDetails.postal_code    = CustomerDetails.ZipCode
                 ttCustomerDetails.Country        = CustomerDetails.Country
                 ttCustomerDetails.email          = CustomerDetails.email
-                ttCustomerDetails.mobile_num     = CustomerDetails.Phone.
+                ttCustomerDetails.Phone_num     = CustomerDetails.Phone.
         END.
         
         FIND FIRST ttCustomerDetails NO-ERROR.
@@ -197,39 +176,39 @@ CLASS Backend.Customer:
     END METHOD.
       
         
-    METHOD PUBLIC LONGCHAR searchCustomers(
-        INPUT cFirstName AS CHARACTER,
-        INPUT cLastName  AS CHARACTER,
-        INPUT cPhone     AS CHARACTER,
-        INPUT cEmail     AS CHARACTER
-        ):
-        DEFINE VARIABLE oResponse AS JsonArray  NO-UNDO.
-        DEFINE VARIABLE oCust     AS JsonObject NO-UNDO.
-        DEFINE VARIABLE lcResult  AS LONGCHAR   NO-UNDO.
+   METHOD PUBLIC LONGCHAR searchCustomers(
+    INPUT cFirstName AS CHARACTER,
+    INPUT cLastName  AS CHARACTER,
+    INPUT cPhone    AS CHARACTER,
+    INPUT cEmail     AS CHARACTER):
 
-        oResponse = NEW JsonArray().
+    DEFINE VARIABLE oResponse AS JsonArray  NO-UNDO.
+    DEFINE VARIABLE oCust     AS JsonObject NO-UNDO.
+    DEFINE VARIABLE lcResult  AS LONGCHAR   NO-UNDO.
 
-        FOR EACH CustomerDetails NO-LOCK
-            WHERE (cFirstName = "" OR CustomerDetails.FirstName BEGINS cFirstName)
-            AND (cLastName  = "" OR CustomerDetails.LastName  BEGINS cLastName)
-            AND (cPhone     = "" OR CustomerDetails.Phone     BEGINS cPhone)
-            AND (cEmail     = "" OR CustomerDetails.Email     BEGINS cEmail):
+    oResponse = NEW JsonArray().
 
-            oCust = NEW JsonObject().
-            oCust:Add("CustID",    CustomerDetails.CustID).
-            oCust:Add("FirstName", CustomerDetails.FirstName).
-            oCust:Add("LastName",  CustomerDetails.LastName).
-            oCust:Add("Phone",     CustomerDetails.Phone).
-            oCust:Add("Email",     CustomerDetails.Email).
+    FOR EACH CustomerDetails NO-LOCK
+        WHERE (cFirstName = "" OR CustomerDetails.FirstName BEGINS cFirstName)
+          AND (cLastName  = "" OR CustomerDetails.LastName  BEGINS cLastName)
+          AND (cPhone    = "" OR CustomerDetails.Phone BEGINS cPhone)
+          AND (cEmail     = "" OR CustomerDetails.Email BEGINS cEmail):
 
-            oResponse:Add(oCust).
-        END.
+        oCust = NEW JsonObject().
+        oCust:Add("CustID",    CustomerDetails.CustID).
+        oCust:Add("FirstName", CustomerDetails.FirstName).
+        oCust:Add("LastName",  CustomerDetails.LastName).
+        oCust:Add("Phone",    CustomerDetails.Phone).
+        oCust:Add("EmailId",   CustomerDetails.Email).
 
-        /* Serialize JSON array to string */
-        oResponse:Write(lcResult).
+        oResponse:Add(oCust).
+    END.
 
-        RETURN lcResult.
-    END METHOD.
+    oResponse:Write(lcResult).
+
+    RETURN lcResult.
+
+END METHOD.
     
     
     
