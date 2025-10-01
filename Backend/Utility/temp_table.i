@@ -34,4 +34,4 @@ DEFINE TEMP-TABLE ttCustomerDetails NO-UNDO
     FIELD postal_code    AS INTEGER
     FIELD Country        AS CHARACTER
     FIELD email          AS CHARACTER
-    FIELD mobile_num     AS CHARACTER.
+    FIELD Phone_num     AS CHARACTER.
