@@ -10,6 +10,8 @@
  ----------------------------------------------------------------------*/
 
 USING Progress.Lang.*.
+USING Progress.Json.ObjectModel.*.
+
 
 BLOCK-LEVEL ON ERROR UNDO, THROW.
 
@@ -92,6 +94,104 @@ CLASS Accounts:
 
         /* Return AccountID */
         iAccountID = iNextAccID.
+
+    END METHOD.
+    
+    
+    METHOD PUBLIC VOID UpdateSavingsAccount(
+        INPUT iAccountID   AS INTEGER,
+        INPUT cBranchCode  AS CHARACTER,
+        INPUT iTransferLimit AS INTEGER):
+
+        /* Find the record first */
+        FIND SavingAccountDetail WHERE SavingAccountDetail.AcctNum = iAccountID NO-LOCK NO-ERROR.
+    
+        IF AVAILABLE SavingAccountDetail THEN 
+        DO:
+            ASSIGN
+                SavingAccountDetail.BranchCode     = cBranchCode
+                SavingAccountDetail.Transfer_limit = iTransferLimit.
+        END.
+
+    END METHOD.
+
+
+
+    METHOD PUBLIC VOID UpdateLoanAccount(
+        INPUT iAccountID   AS INTEGER,
+        INPUT cBranchCode  AS INTEGER,
+        INPUT iTotalLoan   AS INTEGER,
+        INPUT iRateOfInt   AS INTEGER,
+        INPUT iLoanTenure  AS INTEGER):
+
+        /* Find the record first */
+        FIND LoanAccountDetail WHERE LoanAccountDetail.AccNum = iAccountID NO-LOCK NO-ERROR.
+    
+        IF AVAILABLE LoanAccountDetail THEN 
+        DO:
+            ASSIGN
+                LoanAccountDetail.BranchCode      = cBranchCode
+                LoanAccountDetail.TotalLoanAmount = iTotalLoan
+                LoanAccountDetail.RateOfIntrest   = iRateOfInt
+                LoanAccountDetail.LoanTenure      = iLoanTenure.
+        END.
+
+    END METHOD.
+        
+        
+        
+        
+    METHOD PUBLIC LONGCHAR GetAccountDetails (
+        INPUT iAccountID AS INTEGER):
+
+        DEFINE VARIABLE oJsonObj  AS JsonObject NO-UNDO.
+        DEFINE VARIABLE iAcctType AS INTEGER    NO-UNDO.
+        DEFINE VARIABLE lcData    AS LONGCHAR   NO-UNDO.
+
+        DO ON ERROR UNDO, THROW:
+            
+            FIND FIRST CustomerAccounts WHERE CustomerAccounts.AcctNum = iAccountID NO-LOCK NO-ERROR.
+            
+            IF NOT AVAILABLE CustomerAccounts THEN 
+                RETURN Backend.Utility.Mini_Utility:BuildResponse(FALSE, 404, "Account data not Found").                
+            FIND FIRST AccountType WHERE AccountType.AccountTypeID = CustomerAccounts.AccountTypeId NO-LOCK NO-ERROR.
+            IF NOT AVAILABLE AccountType THEN 
+                RETURN Backend.Utility.Mini_Utility:BuildResponse(FALSE, 404, "Account Type not Found").                
+            
+            oJsonObj:set("Account Num",iAccountID).
+            oJsonObj:set("AccountType", AccountType.AccountType).
+            oJsonObj:set("AccountSubType", AccountType.AccSubType).
+
+            IF AccountType.AccountType = "Saving" THEN 
+            DO:
+                FIND FIRST SavingAccountDetail WHERE SavingAccountDetail.AcctNum = iAccountID NO-LOCK NO-ERROR.
+                IF NOT AVAILABLE SavingAccountDetail THEN 
+                    RETURN Backend.Utility.Mini_Utility:BuildResponse(FALSE, 404, "Savings Account not Found").                
+                
+                oJsonObj:set("IFSC_Code", SavingAccountDetail.BranchCode).
+                oJsonObj:set("Transfer_Limit",SavingAccountDetail.Transfer_limit).
+            END.
+            ELSE IF AccountType.AccountType = "Loan" THEN 
+                DO:
+                    FIND FIRST LoanAccountDetail WHERE LoanAccountDetail.AccNum = iAccountID NO-LOCK NO-ERROR.
+                    IF NOT AVAILABLE LoanAccountDetail THEN 
+                        RETURN Backend.Utility.Mini_Utility:BuildResponse(FALSE, 404, "Loan Account not Found").                
+                    oJsonObj:set("IFSC_Code", LoanAccountDetail.BranchCode).
+                    oJsonObj:set("Loan_Duration", LoanAccountDetail.LoanTenure).
+                    oJsonObj:set("Total_Loan", LoanAccountDetail.TotalLoanAmount).
+                    oJsonObj:set("ROI", LoanAccountDetail.RateOfIntrest).
+                END.
+            oJsonObj:Write(lcData,TRUE,"UTF-8").
+            
+            RETURN Backend.Utility.Mini_Utility:BuildResponse(TRUE,200, lcData).
+             
+        END.
+        CATCH  e AS Progress.Lang.Error :
+            RETURN Backend.Utility.Mini_Utility:BuildResponse(FALSE,500, "Get Account Detail by ID: Internal Server Error.").
+        END CATCH.
+        FINALLY:
+            DELETE OBJECT oJsonObj NO-ERROR.
+        END FINALLY.
 
     END METHOD.
 

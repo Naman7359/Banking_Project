@@ -237,9 +237,18 @@ ON WINDOW-CLOSE OF FRAME Dialog-Frame /* <insert dialog title> */
 &Scoped-define SELF-NAME BTN-Cancel
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Cancel Dialog-Frame
 ON CHOOSE OF BTN-Cancel IN FRAME Dialog-Frame /* Cancel */
-    DO:
-  
-    END.
+DO:
+    /* Ensure output is 0 when cancelled */
+    iCustID = 0.
+
+    /* Show cancellation alert */
+    MESSAGE "Data Removed, you may select another"
+        VIEW-AS ALERT-BOX INFO BUTTONS OK.
+
+    /* Close the dialog and return */
+    APPLY "CLOSE" TO THIS-PROCEDURE.
+
+END.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
@@ -249,11 +258,17 @@ ON CHOOSE OF BTN-Cancel IN FRAME Dialog-Frame /* Cancel */
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-Okay Dialog-Frame
 ON CHOOSE OF BTN-Okay IN FRAME Dialog-Frame /* Okay */
     DO:
-        IF AVAILABLE ttCustomer THEN
-            iCustID = ttCustomer.CustID.
-        ELSE
-            iCustID = 0.
-        APPLY "CLOSE" TO SELF.
+    IF AVAILABLE ttCustomer THEN
+        iCustID = ttCustomer.CustID.
+    ELSE
+        iCustID = 0.
+
+    /* Show confirmation if a customer was selected */
+    IF iCustID > 0 THEN
+        MESSAGE "Data Loaded, you may close the window" VIEW-AS ALERT-BOX INFO BUTTONS OK.
+
+    /* Close the dialog after message */
+    APPLY "CLOSE" TO THIS-PROCEDURE.
     END.
 
 /* _UIB-CODE-BLOCK-END */

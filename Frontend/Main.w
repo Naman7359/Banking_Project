@@ -57,7 +57,7 @@ DEFINE TEMP-TABLE ttAccount NO-UNDO
     FIELD AcctNum        AS INTEGER 
     FIELD AccountTypeId  AS INTEGER 
     FIELD AccountType    AS CHARACTER 
-    FIELD AccountSubType AS CHARACTER. 
+    FIELD AccountSubType AS CHARACTER.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
@@ -78,7 +78,7 @@ DEFINE TEMP-TABLE ttAccount NO-UNDO
 &Scoped-define INTERNAL-TABLES ttAccount
 
 /* Definitions for BROWSE BRW-AccountInformation                        */
-&Scoped-define FIELDS-IN-QUERY-BRW-AccountInformation   
+&Scoped-define FIELDS-IN-QUERY-BRW-AccountInformation ttAccount   
 &Scoped-define ENABLED-FIELDS-IN-QUERY-BRW-AccountInformation   
 &Scoped-define SELF-NAME BRW-AccountInformation
 &Scoped-define QUERY-STRING-BRW-AccountInformation FOR EACH ttAccount
@@ -116,11 +116,11 @@ DEFINE VARIABLE C-Win AS WIDGET-HANDLE NO-UNDO.
 /* Definitions of the field level widgets                               */
 DEFINE BUTTON BTN-Add 
     LABEL "Add" 
-    SIZE 10 BY 1.14.
+    SIZE 10 BY 1.13.
 
 DEFINE BUTTON BTN-AddAccount 
     LABEL "Add Account" 
-    SIZE 16 BY 1.14.
+    SIZE 16 BY 1.13.
 
 DEFINE BUTTON BTN-AdvanceSearch 
     LABEL "Advance Search" 
@@ -128,11 +128,11 @@ DEFINE BUTTON BTN-AdvanceSearch
 
 DEFINE BUTTON BTN-Delete 
     LABEL "Delete" 
-    SIZE 10 BY 1.14.
+    SIZE 10 BY 1.13.
 
 DEFINE BUTTON BTN-DeleteAccount 
     LABEL "Delete Account" 
-    SIZE 16 BY 1.14.
+    SIZE 16 BY 1.13.
 
 DEFINE BUTTON BTN-Search 
     LABEL "Search" 
@@ -140,11 +140,11 @@ DEFINE BUTTON BTN-Search
 
 DEFINE BUTTON BTN-Update 
     LABEL "Update" 
-    SIZE 10 BY 1.24.
+    SIZE 10 BY 1.25.
 
 DEFINE BUTTON BTN-UpdateAccount 
     LABEL "Update Account" 
-    SIZE 16 BY 1.14.
+    SIZE 16 BY 1.13.
 
 DEFINE VARIABLE CMB-MaritalStatus AS CHARACTER FORMAT "X(256)":U 
     LABEL "Marital Status" 
@@ -204,29 +204,29 @@ DEFINE RECTANGLE RECT-3
 
 DEFINE RECTANGLE RECT-4
     EDGE-PIXELS 10  NO-FILL   
-    SIZE 104 BY 9.52.
+    SIZE 104 BY 9.53.
 
 DEFINE RECTANGLE RECT-5
     EDGE-PIXELS 10  NO-FILL   
-    SIZE 13 BY 6.52.
+    SIZE 13 BY 6.53.
 
 DEFINE RECTANGLE RECT-6
     EDGE-PIXELS 10  NO-FILL   
-    SIZE 104 BY 6.52.
+    SIZE 104 BY 6.53.
 
 DEFINE RECTANGLE RECT-7
     EDGE-PIXELS 10  NO-FILL   
-    SIZE 18.8 BY 4.76.
+    SIZE 18.75 BY 4.75.
 
 DEFINE VARIABLE TGL-DeselectAll AS LOGICAL INITIAL no 
     LABEL "Deselect All" 
     VIEW-AS TOGGLE-BOX
-    SIZE 14 BY .76 NO-UNDO.
+    SIZE 14 BY .75 NO-UNDO.
 
 DEFINE VARIABLE TGL-SelectAll   AS LOGICAL INITIAL no 
     LABEL "Select All" 
     VIEW-AS TOGGLE-BOX
-    SIZE 11.8 BY .76 NO-UNDO.
+    SIZE 11.75 BY .75 NO-UNDO.
 
 /* Query definitions                                                    */
 &ANALYZE-SUSPEND
@@ -241,7 +241,7 @@ DEFINE BROWSE BRW-AccountInformation
     ttAccount
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
-    WITH NO-ROW-MARKERS SEPARATORS SIZE 74 BY 3.76 FIT-LAST-COLUMN.
+    WITH NO-ROW-MARKERS SEPARATORS SIZE 74 BY 3.75 FIT-LAST-COLUMN.
 
 
 /* ************************  Frame Definitions  *********************** */
@@ -250,38 +250,38 @@ DEFINE FRAME DEFAULT-FRAME
     FLN-CustID AT ROW 4 COL 29 COLON-ALIGNED WIDGET-ID 26
     BTN-Search AT ROW 4 COL 77 WIDGET-ID 28
     BTN-AdvanceSearch AT ROW 4 COL 95 WIDGET-ID 30
-    FLN-FirstName AT ROW 8.24 COL 23 COLON-ALIGNED WIDGET-ID 34
-    FLN-LastName AT ROW 8.24 COL 53 COLON-ALIGNED WIDGET-ID 42
-    CMB-MaritalStatus AT ROW 8.24 COL 83 COLON-ALIGNED WIDGET-ID 50
-    BTN-Add AT ROW 9.48 COL 101 WIDGET-ID 52
-    FLN-Address AT ROW 10.24 COL 23 COLON-ALIGNED WIDGET-ID 36
-    FLN-Address-2 AT ROW 10.24 COL 53 COLON-ALIGNED WIDGET-ID 44
-    BTN-Update AT ROW 11.48 COL 101 WIDGET-ID 54
-    FLN-City AT ROW 12.24 COL 23 COLON-ALIGNED WIDGET-ID 38
-    FLN-State AT ROW 12.24 COL 53 COLON-ALIGNED WIDGET-ID 46
-    BTN-Delete AT ROW 13.71 COL 101 WIDGET-ID 56
-    FLN-Country AT ROW 14.24 COL 23 COLON-ALIGNED WIDGET-ID 40
-    FLN-PostalCode AT ROW 14.24 COL 53 COLON-ALIGNED WIDGET-ID 48
-    TGL-SelectAll AT ROW 18.76 COL 20 WIDGET-ID 70
-    TGL-DeselectAll AT ROW 18.76 COL 34 WIDGET-ID 72
-    BTN-AddAccount AT ROW 19.05 COL 96.4 WIDGET-ID 74
-    BRW-AccountInformation AT ROW 20 COL 16.8 WIDGET-ID 200
-    BTN-UpdateAccount AT ROW 20.57 COL 96.2 WIDGET-ID 76
-    BTN-DeleteAccount AT ROW 22.05 COL 96.2 WIDGET-ID 78
-    "Account Information" VIEW-AS TEXT
-    SIZE 23 BY 1 AT ROW 16.76 COL 54 WIDGET-ID 66
-    FONT 5
+    FLN-FirstName AT ROW 8.25 COL 23 COLON-ALIGNED WIDGET-ID 34
+    FLN-LastName AT ROW 8.25 COL 53 COLON-ALIGNED WIDGET-ID 42
+    CMB-MaritalStatus AT ROW 8.25 COL 83 COLON-ALIGNED WIDGET-ID 50
+    BTN-Add AT ROW 9.47 COL 101 WIDGET-ID 52
+    FLN-Address AT ROW 10.25 COL 23 COLON-ALIGNED WIDGET-ID 36
+    FLN-Address-2 AT ROW 10.25 COL 53 COLON-ALIGNED WIDGET-ID 44
+    BTN-Update AT ROW 11.47 COL 101 WIDGET-ID 54
+    FLN-City AT ROW 12.25 COL 23 COLON-ALIGNED WIDGET-ID 38
+    FLN-State AT ROW 12.25 COL 53 COLON-ALIGNED WIDGET-ID 46
+    BTN-Delete AT ROW 13.72 COL 101 WIDGET-ID 56
+    FLN-Country AT ROW 14.25 COL 23 COLON-ALIGNED WIDGET-ID 40
+    FLN-PostalCode AT ROW 14.25 COL 53 COLON-ALIGNED WIDGET-ID 48
+    TGL-SelectAll AT ROW 18.75 COL 20 WIDGET-ID 70
+    TGL-DeselectAll AT ROW 18.75 COL 34 WIDGET-ID 72
+    BTN-AddAccount AT ROW 19.06 COL 96.38 WIDGET-ID 74
+    BRW-AccountInformation AT ROW 20 COL 16.75 WIDGET-ID 200
+    BTN-UpdateAccount AT ROW 20.56 COL 96.25 WIDGET-ID 76
+    BTN-DeleteAccount AT ROW 22.06 COL 96.25 WIDGET-ID 78
     "CUSTOMER INFORMATION" VIEW-AS TEXT
     SIZE-PIXELS 264 BY 56 AT Y 8 X 382 WIDGET-ID 24
     FONT 1
     "Customer Details" VIEW-AS TEXT
-    SIZE 19 BY 1 AT ROW 5.71 COL 56 WIDGET-ID 62
+    SIZE 19 BY 1 AT ROW 5.72 COL 56 WIDGET-ID 62
     FONT 5
-    RECT-3 AT ROW 3.52 COL 13 WIDGET-ID 32
-    RECT-4 AT ROW 7.24 COL 13 WIDGET-ID 58
-    RECT-5 AT ROW 8.95 COL 100 WIDGET-ID 60
+    "Account Information" VIEW-AS TEXT
+    SIZE 23 BY 1 AT ROW 16.75 COL 54 WIDGET-ID 66
+    FONT 5
+    RECT-3 AT ROW 3.53 COL 13 WIDGET-ID 32
+    RECT-4 AT ROW 7.25 COL 13 WIDGET-ID 58
+    RECT-5 AT ROW 8.94 COL 100 WIDGET-ID 60
     RECT-6 AT ROW 18 COL 13 WIDGET-ID 68
-    RECT-7 AT ROW 18.81 COL 95.2 WIDGET-ID 80
+    RECT-7 AT ROW 18.81 COL 95.25 WIDGET-ID 80
     WITH 1 DOWN NO-BOX KEEP-TAB-ORDER OVERLAY 
     SIDE-LABELS NO-UNDERLINE THREE-D 
     AT COLUMN 1 ROW 1
@@ -306,11 +306,11 @@ IF SESSION:DISPLAY-TYPE = "GUI":U THEN
         HIDDEN             = YES
         TITLE              = "<insert window title>"
         HEIGHT             = 24
-        WIDTH              = 129.2
-        MAX-HEIGHT         = 24.57
-        MAX-WIDTH          = 155.8
-        VIRTUAL-HEIGHT     = 24.57
-        VIRTUAL-WIDTH      = 155.8
+        WIDTH              = 129.25
+        MAX-HEIGHT         = 24.56
+        MAX-WIDTH          = 155.75
+        VIRTUAL-HEIGHT     = 24.56
+        VIRTUAL-WIDTH      = 155.75
         RESIZE             = yes
         SCROLL-BARS        = no
         STATUS-AREA        = no
@@ -432,8 +432,9 @@ ON CHOOSE OF BTN-AddAccount IN FRAME DEFAULT-FRAME /* Add Account */
 
         /* Run dialog */
         RUN Add_Account.w(
-            INPUT iCustID,        /* customer ID */
-            OUTPUT iAccountID     /* newly created account ID */
+            INPUT iCustID,    
+            OUTPUT iAccountID,    /* customer ID */
+            INPUT "ADD"     /* newly created account ID */
             ).
 
         /* Refresh Accounts browse if an account was created */
@@ -450,23 +451,24 @@ ON CHOOSE OF BTN-AddAccount IN FRAME DEFAULT-FRAME /* Add Account */
 &Scoped-define SELF-NAME BTN-AdvanceSearch
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-AdvanceSearch C-Win
 ON CHOOSE OF BTN-AdvanceSearch IN FRAME DEFAULT-FRAME /* Advance Search */
-DO:
-    DEFINE VARIABLE iCustID AS INTEGER NO-UNDO.
+    DO:
+        DEFINE VARIABLE iCustID AS INTEGER NO-UNDO.
 
-    /* Open Customer Filter dialog and get selected CustID */
-    RUN Customer_Filler.w (OUTPUT iCustID).  
+        /* Open Customer Filter dialog and get selected CustID */
+        RUN Customer_Filler.w (OUTPUT iCustID).  
 
-    /* If a customer was selected, populate fields and trigger Search */
-    IF iCustID <> 0 THEN DO:
-        FLN-CustID:SCREEN-VALUE = STRING(iCustID).
+        /* If a customer was selected, populate fields and trigger Search */
+        IF iCustID <> 0 THEN 
+        DO:
+            FLN-CustID:SCREEN-VALUE = STRING(iCustID).
 
-        /* Trigger Search button logic to fill main form fields */
-        APPLY "CHOOSE" TO BTN-Search IN FRAME DEFAULT-FRAME.
+            /* Trigger Search button logic to fill main form fields */
+            APPLY "CHOOSE" TO BTN-Search IN FRAME DEFAULT-FRAME.
 
         /* Load Orders and Order Lines for the selected customer */
-/*        RUN Load_Orders(iCustID).*/
+        /*        RUN Load_Orders(iCustID).*/
+        END.
     END.
-END.
 
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
@@ -523,6 +525,39 @@ ON CHOOSE OF BTN-Search IN FRAME DEFAULT-FRAME /* Search */
 ON CHOOSE OF BTN-Update IN FRAME DEFAULT-FRAME /* Update */
     DO:
         RUN Add_Update_Customer.w (INPUT 0, INPUT "Update").
+    END.
+
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
+&Scoped-define SELF-NAME BTN-UpdateAccount
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _CONTROL BTN-UpdateAccount C-Win
+ON CHOOSE OF BTN-UpdateAccount IN FRAME DEFAULT-FRAME /* Update Account */
+    DO:
+        DEFINE VARIABLE iSelectedAccountID AS INTEGER   NO-UNDO.
+        DEFINE VARIABLE cAction            AS CHARACTER NO-UNDO.
+        DEFINE VARIABLE iAccountId         AS INTEGER   NO-UNDO.
+        /* Make sure a row is selected in the browse (ttAccount is query buffer) */
+        IF AVAILABLE ttAccount THEN 
+        DO:
+            /* Get selected AccountID */
+            iSelectedAccountID = ttAccount.AcctNum.
+
+            /* Set action to UPDATE */
+            cAction = "UPDATE".
+
+            /* Open Add_Account dialog in UPDATE mode, passing AccountID and cAction */
+            RUN Add_Account.w (
+                INPUT iSelectedAccountID,
+                OUTPUT iAccountId,
+                INPUT cAction
+                ).
+        END.
+        ELSE 
+        DO:
+            MESSAGE "Please select an account to update." VIEW-AS ALERT-BOX INFO.
+        END.
     END.
 
 /* _UIB-CODE-BLOCK-END */
@@ -656,9 +691,9 @@ END PROCEDURE.
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE FillCustomerData C-Win 
 PROCEDURE FillCustomerData :
     /*------------------------------------------------------------------------------
-         Purpose:
-         Notes:
-        ------------------------------------------------------------------------------*/
+             Purpose:
+             Notes:
+            ------------------------------------------------------------------------------*/
     DEFINE INPUT PARAMETER lcInputData AS LONGCHAR NO-UNDO.
     DEFINE VARIABLE oParser     AS ObjectModelParser NO-UNDO.
     DEFINE VARIABLE oJson       AS JsonObject        NO-UNDO.
@@ -698,7 +733,7 @@ PROCEDURE FillCustomerData :
         QUERY BRW-AccountInformation:QUERY-CLOSE ().
         /* Get the Accounts array */
         oAcctsArray = CAST(oJson:GetJsonArray("Accounts"), JsonArray) NO-ERROR.
-/*        MESSAGE STRING (oAcctsArray) .*/
+        /*        MESSAGE STRING (oAcctsArray) .*/
 
         /* Iterate through the array and create records in ttAccount */
         IF oAcctsArray:Length > 0 THEN 
@@ -744,23 +779,19 @@ END PROCEDURE.
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
 
-
-&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE Load_Orders C-Win
-PROCEDURE Load_Orders:
-
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE Load_Orders C-Win 
+PROCEDURE Load_Orders :
 END PROCEDURE.
-    
+
 /* _UIB-CODE-BLOCK-END */
 &ANALYZE-RESUME
-
-
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE Search_Customer C-Win 
 PROCEDURE Search_Customer :
     /*------------------------------------------------------------------------------
-         Purpose:
-         Notes:
-        ------------------------------------------------------------------------------*/
+             Purpose:
+             Notes:
+            ------------------------------------------------------------------------------*/
 
     DEFINE VARIABLE oCustomer AS Backend.Customer NO-UNDO.
     DEFINE VARIABLE lcRes     AS LONGCHAR         NO-UNDO.
@@ -777,7 +808,7 @@ PROCEDURE Search_Customer :
             lcRes = oCustomer:getCustomerWithAccounts( INPUT INTEGER(FLN-CustID:SCREEN-VALUE IN FRAME DEFAULT-FRAME)).
             lcData = Frontend.Utility.Utility:ReadResponse(lcRes).
             RUN FillCustomerData ( INPUT lcData).
-/*            MESSAGE STRING(lcData).*/
+        /*            MESSAGE STRING(lcData).*/
         end. 
         ELSE 
         DO:
