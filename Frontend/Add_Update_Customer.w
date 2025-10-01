@@ -1016,7 +1016,7 @@ PROCEDURE update-customer :
         ttCustomerDetails.postal_code    = INTEGER(FLN-PostalCode:SCREEN-VALUE IN FRAME Dialog-Frame)
         ttCustomerDetails.Country        = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame
         ttCustomerDetails.email          = ""
-        ttCustomerDetails.mobile_num     = "".
+        ttCustomerDetails.Phone_num      = "".
     
     MESSAGE "2".
     /* Create controller and call update method */
@@ -1098,7 +1098,7 @@ PROCEDURE create-customer :
         ttCustomerDetails.postal_code    = INTEGER(FLN-PostalCode:SCREEN-VALUE IN FRAME Dialog-Frame)
         ttCustomerDetails.Country        = CMB-Country:SCREEN-VALUE IN FRAME Dialog-Frame
         ttCustomerDetails.email          = ""
-        ttCustomerDetails.mobile_num     = "".
+        ttCustomerDetails.Phone_num      = "".
 
     /* Create controller and call create method */
     oCustomer = NEW Backend.Customer().

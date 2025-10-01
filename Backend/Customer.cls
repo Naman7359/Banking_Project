@@ -851,7 +851,7 @@ END METHOD.
                     ttCustomerDetails.postal_code    = CustomerDetails.ZipCode
                     ttCustomerDetails.Country        = CustomerDetails.Country
                     ttCustomerDetails.email          = CustomerDetails.EmailId
-                    ttCustomerDetails.mobile_num     = CustomerDetails.Phone.
+                    ttCustomerDetails.Phone_num     = CustomerDetails.Phone.
             
                 lSuccess = TRUE.
             END.

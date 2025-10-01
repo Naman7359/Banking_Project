@@ -564,10 +564,6 @@ ON CHOOSE OF BTN-UpdateAccount IN FRAME DEFAULT-FRAME /* Update Account */
 &ANALYZE-RESUME
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/naman
 &Scoped-define BROWSE-NAME BRW-AccountInformation
 &UNDEFINE SELF-NAME
 
