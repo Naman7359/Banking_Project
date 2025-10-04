@@ -128,7 +128,7 @@ CLASS Backend.Customer:
                             CustomerDetails.ZipCode       = ttCustomerDetails.postal_code
                             CustomerDetails.Country       = ttCustomerDetails.Country
                             CustomerDetails.EmailId       = ttCustomerDetails.email
-                            CustomerDetails.Phone         = ttCustomerDetails.mobile_num
+                            CustomerDetails.Phone         = ttCustomerDetails.Phone_num
                             lSuccess                      = TRUE.
                             
                             

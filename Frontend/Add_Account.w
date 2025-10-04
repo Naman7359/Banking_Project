@@ -109,10 +109,10 @@ DEFINE VARIABLE CMB-AccountSubType-Loan AS CHARACTER FORMAT "X(256)":U
 
 DEFINE VARIABLE CMB-AccountType-Loan AS CHARACTER FORMAT "X(256)":U 
      LABEL "Account Type" 
-     VIEW-AS COMBO-BOX INNER-LINES 5
+     VIEW-AS COMBO-BOX INNER-LINES 1
      LIST-ITEMS "Loan" 
      DROP-DOWN-LIST
-     SIZE 16 BY 1 NO-UNDO.
+     SIZE 16 BY .88 NO-UNDO.
 
 DEFINE VARIABLE CMB-LoanDuration AS CHARACTER FORMAT "X(256)":U 
      LABEL "Loan Duration (yrs)" 
@@ -155,9 +155,9 @@ DEFINE VARIABLE CMB-AccountSubType-Savings AS CHARACTER FORMAT "X(256)":U
      DROP-DOWN-LIST
      SIZE 16 BY 1 NO-UNDO.
 
-DEFINE VARIABLE CMB-AccountType-Savings AS CHARACTER FORMAT "X(256)":U 
+DEFINE VARIABLE CMB-AccountType-Savings AS CHARACTER FORMAT "X(256)":U INITIAL "Savings" 
      LABEL "Account Type" 
-     VIEW-AS COMBO-BOX INNER-LINES 5
+     VIEW-AS COMBO-BOX INNER-LINES 1
      LIST-ITEMS "Savings" 
      DROP-DOWN-LIST
      SIZE 16 BY 1 NO-UNDO.
@@ -181,7 +181,7 @@ DEFINE RECTANGLE RECT-12
 
 DEFINE FRAME Dialog-Frame
      CMB-SelectAccountType AT ROW 2 COL 22 COLON-ALIGNED WIDGET-ID 4
-     SPACE(50.99) SKIP(20.54)
+     SPACE(50.99) SKIP(20.66)
     WITH VIEW-AS DIALOG-BOX KEEP-TAB-ORDER 
          SIDE-LABELS NO-UNDERLINE THREE-D  SCROLLABLE 
          TITLE "<insert dialog title>" WIDGET-ID 100.
@@ -366,10 +366,17 @@ RUN disable_UI.
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE CreateLoanAccountInternal Dialog-Frame 
 PROCEDURE CreateLoanAccountInternal :
-    DEFINE VARIABLE iNextAccID AS INTEGER NO-UNDO.
+DEFINE VARIABLE iNextAccID AS INTEGER NO-UNDO.
     DEFINE VARIABLE oAccounts  AS Accounts NO-UNDO.
+    DEFINE VARIABLE lcAccountData AS LONGCHAR NO-UNDO.
 
     oAccounts = NEW Accounts().
+
+    /* --- Fetch account details if needed --- */
+    lcAccountData = oAccounts:GetAccountDetails(iId).
+
+    /* You can parse lcAccountData if needed or just keep it for logging/debugging */
+    /* Example: MESSAGE lcAccountData VIEW-AS ALERT-BOX INFO. */
 
     IF cAction = "ADD" THEN 
     DO:
@@ -403,10 +410,17 @@ END PROCEDURE.
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE CreateSavingsAccountInternal Dialog-Frame 
 PROCEDURE CreateSavingsAccountInternal :
-    DEFINE VARIABLE iNextAccountID AS INTEGER  NO-UNDO.
-    DEFINE VARIABLE oAccounts      AS Accounts NO-UNDO. 
+DEFINE VARIABLE iNextAccountID AS INTEGER NO-UNDO.
+    DEFINE VARIABLE oAccounts      AS Accounts NO-UNDO.
+    DEFINE VARIABLE lcAccountData  AS LONGCHAR NO-UNDO.
 
     oAccounts = NEW Accounts().
+
+    /* --- Fetch account details if needed --- */
+    lcAccountData = oAccounts:GetAccountDetails(iId).
+
+    /* You can parse lcAccountData if needed or keep it for logging/debugging */
+    /* Example: MESSAGE lcAccountData VIEW-AS ALERT-BOX INFO. */
 
     IF cAction = "ADD" THEN 
     DO:
@@ -490,9 +504,16 @@ END PROCEDURE.
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE LoadAccountDetails Dialog-Frame 
 PROCEDURE LoadAccountDetails :
 DEFINE INPUT PARAMETER cJSONData AS LONGCHAR NO-UNDO.
-    DEFINE VARIABLE oParser   AS ObjectModelParser NO-UNDO.
-    DEFINE VARIABLE oJsonObj  AS JsonObject        NO-UNDO.
-    DEFINE VARIABLE iAcctType AS INTEGER           NO-UNDO.
+    DEFINE VARIABLE oParser          AS ObjectModelParser NO-UNDO.
+    DEFINE VARIABLE oJsonObj         AS JsonObject        NO-UNDO.
+    DEFINE VARIABLE iAcctType        AS INTEGER           NO-UNDO.
+    DEFINE VARIABLE oAccounts        AS Accounts          NO-UNDO.
+    DEFINE VARIABLE cSavingsSubTypes AS CHARACTER         NO-UNDO.
+    DEFINE VARIABLE cLoanSubTypes    AS CHARACTER         NO-UNDO.
+
+    /* Create Accounts object to call GetAccountSubTypes */
+    oAccounts = NEW Accounts().
+    oAccounts:GetAccountSubTypes(OUTPUT cSavingsSubTypes, OUTPUT cLoanSubTypes).
 
     /* Parse JSON */
     oParser  = NEW ObjectModelParser().
@@ -505,7 +526,7 @@ DEFINE INPUT PARAMETER cJSONData AS LONGCHAR NO-UNDO.
     IF iAcctType = 1 THEN
         CMB-SelectAccountType:SCREEN-VALUE IN FRAME Dialog-Frame = "SAVINGS".
     ELSE IF iAcctType = 2 THEN
-            CMB-SelectAccountType:SCREEN-VALUE IN FRAME Dialog-Frame = "LOAN".
+        CMB-SelectAccountType:SCREEN-VALUE IN FRAME Dialog-Frame = "LOAN".
 
     /* Populate Savings frame if account type = 1 */
     IF iAcctType = 1 THEN 
@@ -514,7 +535,10 @@ DEFINE INPUT PARAMETER cJSONData AS LONGCHAR NO-UNDO.
         DISABLE ALL WITH FRAME FRM-LoanAccount.
 
         FLN-IFSC-Code-Savings:SCREEN-VALUE IN FRAME FRM-SavingAccount = oJsonObj:GetCharacter("BranchCode").
-        FLN-TransferLimit:SCREEN-VALUE IN FRAME FRM-SavingAccount  = STRING(oJsonObj:GetDecimal("Transfer_limit")).
+        FLN-TransferLimit:SCREEN-VALUE IN FRAME FRM-SavingAccount    = STRING(oJsonObj:GetDecimal("Transfer_limit")).
+
+        /* Populate Savings subtype combo-box */
+        CMB-AccountSubType-Savings:LIST-ITEMS IN FRAME FRM-SavingAccount = cSavingsSubTypes.
     END.
 
     /* Populate Loan frame if account type = 2 */
@@ -527,11 +551,15 @@ DEFINE INPUT PARAMETER cJSONData AS LONGCHAR NO-UNDO.
         FLN-TotalLoanAmmount:SCREEN-VALUE IN FRAME FRM-LoanAccount     = STRING(oJsonObj:GetDecimal("TotalLoanAmount")).
         FLN-RateOfIntrest:SCREEN-VALUE IN FRAME FRM-LoanAccount        = STRING(oJsonObj:GetDecimal("RateOfIntrest")).
         CMB-LoanDuration:SCREEN-VALUE IN FRAME FRM-LoanAccount         = STRING(oJsonObj:GetInteger("LoanTenure")).
+
+        /* Populate Loan subtype combo-box */
+        CMB-AccountSubType-Loan:LIST-ITEMS IN FRAME FRM-LoanAccount = cLoanSubTypes.
     END.
 
     /* Clean up */
-    DELETE OBJECT oJsonObj NO-ERROR.
-    DELETE OBJECT oParser  NO-ERROR.
+    DELETE OBJECT oJsonObj   NO-ERROR.
+    DELETE OBJECT oParser    NO-ERROR.
+    DELETE OBJECT oAccounts  NO-ERROR.
 END PROCEDURE.
 
 /* _UIB-CODE-BLOCK-END */

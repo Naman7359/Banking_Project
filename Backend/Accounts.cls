@@ -104,7 +104,7 @@ CLASS Accounts:
         INPUT iTransferLimit AS INTEGER):
 
         /* Find the record first */
-        FIND SavingAccountDetail WHERE SavingAccountDetail.AcctNum = iAccountID NO-LOCK NO-ERROR.
+        FIND SavingAccountDetail WHERE SavingAccountDetail.AcctNum = iAccountID EXCLUSIVE-LOCK NO-ERROR.
     
         IF AVAILABLE SavingAccountDetail THEN 
         DO:
@@ -194,6 +194,51 @@ CLASS Accounts:
         END FINALLY.
 
     END METHOD.
+
+
+METHOD PUBLIC VOID GetAccountSubTypes (
+    OUTPUT cSavingsSubTypes AS CHARACTER,
+    OUTPUT cLoanSubTypes    AS CHARACTER
+):
+    /* Raw data containing all account types and subtypes */
+    DEFINE VARIABLE cData AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE i     AS INTEGER   NO-UNDO.
+    DEFINE VARIABLE cLine AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE cParts AS CHARACTER EXTENT 3 NO-UNDO. /* ID, Type, Subtype */
+
+    /* Input string with line breaks */
+    cData = 
+        "1,Saving,FD" + CHR(10) +
+        "2,Saving,RD" + CHR(10) +
+        "3,Loan,Personal Loan" + CHR(10) +
+        "4,Loan,Home Loan" + CHR(10) +
+        "5,Loan,Car Loan" + CHR(10) +
+        "6,Loan,Education Loan".
+
+    /* Initialize output variables */
+    cSavingsSubTypes = "".
+    cLoanSubTypes    = "".
+
+    /* Split lines by CHR(10) */
+    DO i = 1 TO NUM-ENTRIES(cData, CHR(10)):
+        cLine = ENTRY(i, cData, CHR(10)).
+        cParts = ENTRY(1, cLine, ",") 
+               + "," + ENTRY(2, cLine, ",")
+               + "," + ENTRY(3, cLine, ",").
+        /* Determine type and add to corresponding output */
+        IF ENTRY(2, cLine, ",") = "Saving" THEN
+            cSavingsSubTypes = cSavingsSubTypes + ENTRY(3, cLine, ",") + ", ".
+        ELSE IF ENTRY(2, cLine, ",") = "Loan" THEN
+            cLoanSubTypes = cLoanSubTypes + ENTRY(3, cLine, ",") + ", ".
+    END.
+
+    /* Remove trailing comma and space */
+    IF LENGTH(cSavingsSubTypes) > 2 THEN
+        cSavingsSubTypes = SUBSTRING(cSavingsSubTypes, 1, LENGTH(cSavingsSubTypes) - 2).
+    IF LENGTH(cLoanSubTypes) > 2 THEN
+        cLoanSubTypes = SUBSTRING(cLoanSubTypes, 1, LENGTH(cLoanSubTypes) - 2).
+
+END METHOD.
 
     /*------------------------------------------------------------------------------
      Purpose:
